@@ -1,6 +1,9 @@
 #include "co.h"
 #include <stdlib.h>
 #include <stdint.h> 
+#include <stdio.h>
+#include <string.h>
+
 #define STACK_SIZE 1024*64
 #define MAX_CO 1<<10
 
