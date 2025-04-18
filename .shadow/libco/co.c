@@ -66,7 +66,6 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     // calculate the stack point
     uintptr_t sp = (uintptr_t)(new_co->stack+STACK_SIZE);
     sp = sp-(sp % 16);
-    printf("Create a new co\n");
 
     // push the co_trampoline's frame
     sp -= sizeof(void*);
@@ -79,6 +78,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 }
 
 void co_wait(struct co *co) {
+    
 }
 
 void co_yield() {
