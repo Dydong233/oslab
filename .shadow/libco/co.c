@@ -17,6 +17,7 @@ struct co *current = NULL;
 struct co *co_list[MAX_CO];
 int co_count = 0;
 
+// co's state
 enum co_status {
     CO_NEW = 1, // create a co
     CO_RUNNING, // running
@@ -25,14 +26,14 @@ enum co_status {
 };
 
 struct context {
-    uint64_t rsp;
-    uint64_t rip;
-    uint64_t rbx;
-    uint64_t rbp;
-    uint64_t r12;
-    uint64_t r13;
-    uint64_t r14;
-    uint64_t r15;
+    uintptr_t rsp;
+    uintptr_t rip;
+    uintptr_t rbx;
+    uintptr_t rbp;
+    uintptr_t r12;
+    uintptr_t r13;
+    uintptr_t r14;
+    uintptr_t r15;
 };
 
 struct co {
@@ -62,6 +63,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     new_co->func = func;
     new_co->arg = arg;
     new_co->status = CO_NEW;
+    new_co->waiter = NULL;
     
     // calculate the stack point
     uintptr_t sp = (uintptr_t)(new_co->stack+STACK_SIZE);
@@ -78,8 +80,73 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 }
 
 void co_wait(struct co *co) {
-    
+
 }
 
+__attribute__((noinline))
+int setjmp(struct context *ctx)
+{
+    asm volatile(
+        // save the rsp&rip&other regs
+        "movq %%rsp, 0(%0)\n\t"
+        "leaq 1f(%%rip), %%rax\n\t"
+        "movq %%rax, 8(%0)\n\t"
+        "movq %%rbx, 16(%0)\n\t"
+        "movq %%rbp, 24(%0)\n\t"
+        "movq %%r12, 32(%0)\n\t"
+        "movq %%r13, 40(%0)\n\t"
+        "movq %%r14, 48(%0)\n\t"
+        "movq %%r15, 56(%0)\n\t"
+        // return 0
+        "xor %%eax, %%eax\n\t"
+        "1:\n\t"
+        : /* no output */
+        : "r"(ctx)
+        : "memory", "rax"
+    );
+    return 0;
+}
+__attribute__((noinline))
+void longjmp(struct context *ctx)
+{
+    asm volatile(
+         "movq 16(%0), %%rbx\n\t"
+         "movq 24(%0), %%rbp\n\t"
+         "movq 32(%0), %%r12\n\t"
+         "movq 40(%0), %%r13\n\t"
+         "movq 48(%0), %%r14\n\t"
+         "movq 56(%0), %%r15\n\t"
+         "movq 0(%0), %%rsp\n\t"
+         "jmp *8(%0)\n\t"
+         :
+         : "r"(ctx)
+         : "memory"
+    );
+    __builtin_unreachable(); // never return
+}
 void co_yield() {
+    if(setjmp(&current->context) == 0) {
+        if(current->status != CO_DEAD) {
+            current->status = CO_WAITING;
+        }
+    }
+    // not rand co
+    struct co *next = NULL;
+    for(int i = 0; i < co_count; i++) {
+        if(co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING) {
+            next = co_list[i];
+            break;
+        }
+    }
+    // if other co's are dead
+    if(next == NULL&&current->status == CO_DEAD) {
+        printf("There is no co alive\n");
+        return;
+    }
+    else next = current;
+    // switch to next co
+    current = next;
+    current->status = CO_RUNNING;
+    longjmp(&current->context);
+    return;
 }
