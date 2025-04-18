@@ -66,8 +66,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     // calculate the stack point
     uintptr_t sp = (uintptr_t)(new_co->stack+STACK_SIZE);
     sp = sp-(sp % 16);
-    printf("This co's stack point is: %p to %d\n",new_co->stack,sp);
-
+    
     // push the co_trampoline's frame
     sp -= sizeof(void*);
     *(void**)sp = (void*)co_trampoline;
