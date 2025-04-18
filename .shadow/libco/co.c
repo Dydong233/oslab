@@ -97,7 +97,6 @@ int setjmp(struct context *ctx)
         "movq %%r13, 40(%0)\n\t"
         "movq %%r14, 48(%0)\n\t"
         "movq %%r15, 56(%0)\n\t"
-        // return 0
         "xor %%eax, %%eax\n\t"
         "1:\n\t"
         : /* no output */
