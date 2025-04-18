@@ -104,8 +104,6 @@ int setjmp(struct context *ctx)
         : "r"(ctx)
         : "memory", "rax"
     );
-    #else
-    #error "This assembly only supports x86_64 architecture"
 #endif
     return 0;
 }
