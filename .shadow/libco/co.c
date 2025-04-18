@@ -86,7 +86,7 @@ void co_wait(struct co *co) {
 __attribute__((noinline))
 int setjmp(struct context *ctx)
 {
-    #if __x86_64__
+#if __x86_64__
     asm volatile(
         // save the rsp&rip&other regs
         "movq %%rsp, 0(%0)\n\t"
@@ -104,12 +104,29 @@ int setjmp(struct context *ctx)
         : "r"(ctx)
         : "memory", "rax"
     );
+#else
+    asm volatile(
+        "movl %%esp, 0(%0)\n\t"
+        "call 1f\n\t"
+        "1:\n\t"
+        "popl %%eax\n\t"
+        "movl %%eax, 4(%0)\n\t"
+        "movl %%ebx, 8(%0)\n\t"
+        "movl %%ebp, 12(%0)\n\t"
+        "movl %%esi, 16(%0)\n\t"
+        "movl %%edi, 20(%0)\n\t"
+        "xorl %%eax, %%eax\n\t"
+        :
+        : "r"(ctx)
+        : "memory", "eax"
+    );
 #endif
     return 0;
 }
 __attribute__((noinline))
 void longjmp(struct context *ctx)
 {
+#if __x86_64__
     asm volatile(
          "movq 16(%0), %%rbx\n\t"
          "movq 24(%0), %%rbp\n\t"
@@ -123,6 +140,19 @@ void longjmp(struct context *ctx)
          : "r"(ctx)
          : "memory"
     );
+#else
+    asm volatile(
+        "movl 8(%0), %%ebx\n\t"
+        "movl 12(%0), %%ebp\n\t"
+        "movl 16(%0), %%esi\n\t"
+        "movl 20(%0), %%edi\n\t"
+        "movl 0(%0), %%esp\n\t"
+        "jmp *4(%0)\n\t"
+        :
+        : "r"(ctx)
+        : "memory"
+    );
+#endif
     __builtin_unreachable(); // never return
 }
 void co_yield() {
