@@ -66,12 +66,12 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     // calculate the stack point
     uintptr_t sp = (uintptr_t)(new_co->stack+STACK_SIZE);
     sp = sp-(sp % 16);
-    
+
     // push the co_trampoline's frame
     sp -= sizeof(void*);
     *(void**)sp = (void*)co_trampoline;
     new_co->context.rsp = sp;
-    new_co->context.rip = (uint64_t)co_trampoline;
+    new_co->context.rip = (uintptr_t)co_trampoline;
     co_list[co_count++] = new_co;
 
     return new_co;
