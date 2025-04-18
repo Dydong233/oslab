@@ -88,9 +88,9 @@ int setjmp(struct context *ctx)
 {
     asm volatile(
         // save the rsp&rip&other regs
-        "movq %rsp, 0(%0)\n\t"
+        "movq %%rsp, 0(%0)\n\t"
         "leaq 1f(%%rip), %%rax\n\t"
-        "movq %%rax, 8(%0)\n\t"
+        "movq %rax, 8(%0)\n\t"
         "movq %%rbx, 16(%0)\n\t"
         "movq %%rbp, 24(%0)\n\t"
         "movq %%r12, 32(%0)\n\t"
