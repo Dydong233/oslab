@@ -86,6 +86,7 @@ void co_wait(struct co *co) {
 __attribute__((noinline))
 int setjmp(struct context *ctx)
 {
+    #if __x86_64__
     asm volatile(
         // save the rsp&rip&other regs
         "movq %%rsp, 0(%0)\n\t"
@@ -103,6 +104,9 @@ int setjmp(struct context *ctx)
         : "r"(ctx)
         : "memory", "rax"
     );
+    #else
+    #error "This assembly only supports x86_64 architecture"
+#endif
     return 0;
 }
 __attribute__((noinline))
