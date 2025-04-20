@@ -189,7 +189,6 @@ void co_yield() {
         printf("There is no co alive\n");
         return;
     }
-    else next = current;
     // switch to next co
     current = next;
     current->status = CO_RUNNING;
