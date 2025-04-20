@@ -181,16 +181,26 @@ void co_yield() {
     struct co *next = NULL;
 
     // find the next co
-    int rand_co = rand() % co_count;
-    printf("co_count: %d    rand_co: %d\n", co_count,rand_co);
-
-    // not rand co
-    for(int i = 0; i < co_count; i++) {
-        if((co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING) && co_list[i]!= current) {
-            next = co_list[i];
+    int rand_co;
+    while(rand_co = rand() % co_count) {
+        if(current == NULL){    // The first co
+            next = rand_co;
+            break;
+        }
+        if(co_list[rand_co]->status == CO_NEW || co_list[rand_co]->status == CO_WAITING) {
+            next = co_list[rand_co];
+            printf("This time choose co %s\n", next->name);
             break;
         }
     }
+
+    // not rand co (just change to anther co)
+    // for(int i = 0; i < co_count; i++) {
+    //     if((co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING) && co_list[i]!= current) {
+    //         next = co_list[i];
+    //         break;
+    //     }
+    // }
 
     // if other co's are dead
     if(next == NULL&&current->status == CO_DEAD) {
