@@ -80,7 +80,22 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 }
 
 void co_wait(struct co *co) {
-
+    // check if the co is alive
+    if(co==NULL || co == current)   return;
+    // situation 1: co is dead
+    if(co->status == CO_DEAD) {
+        printf("co %s is dead\n", co->name);
+        free(co);
+        return;
+    }
+    // situation 2: co is running
+    if(current != NULL)    current->status = CO_WAITING;
+    if(current != NULL)    co->waiter = current;
+    while(co->status != CO_DEAD) {
+        co_yield();
+    }
+    if(current != NULL)    current->status = CO_RUNNING;
+    free(co);
 }
 
 __attribute__((noinline))
