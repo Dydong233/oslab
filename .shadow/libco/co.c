@@ -186,10 +186,9 @@ void co_yield() {
         // The first situation : current is NULL
         // The second situation : There is only one co
         rand_co = rand() % co_count;
-        puts("");
         if(co_list[rand_co]->status != CO_DEAD) {
             next = co_list[rand_co];
-            // printf("This time choose co %s\n", next->name);
+            printf("This time choose co %s\n", next->name);
             break;
         }
     }
