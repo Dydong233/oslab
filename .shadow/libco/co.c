@@ -174,14 +174,21 @@ void co_yield() {
             if(current->status != CO_DEAD)    current->status = CO_WAITING;
         }
     }
-    // not rand co
     struct co *next = NULL;
+
+    // find the next co
+    srand((unsigned int)time(NULL));
+    int rand_co = rand() % co_count;
+    printf("rand_co: %d\n", rand_co);
+
+    // not rand co
     for(int i = 0; i < co_count; i++) {
         if((co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING) && co_list[i]!= current) {
             next = co_list[i];
             break;
         }
     }
+
     // if other co's are dead
     if(next == NULL&&current->status == CO_DEAD) {
         printf("There is no co alive\n");
