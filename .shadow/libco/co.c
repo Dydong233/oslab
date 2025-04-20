@@ -64,7 +64,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     new_co->arg = arg;
     new_co->status = CO_NEW;
     new_co->waiter = NULL;
-    
+
     // calculate the stack point
     uintptr_t sp = (uintptr_t)(new_co->stack+STACK_SIZE);
     sp = sp-(sp % 16);
@@ -80,8 +80,6 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 }
 
 void co_wait(struct co *co) {
-    // check if the co is alive
-    if(co==NULL || co == current)   return;
     // situation 1: co is dead
     if(co->status == CO_DEAD) {
         printf("co %s is dead\n", co->name);
@@ -179,7 +177,7 @@ void co_yield() {
     // not rand co
     struct co *next = NULL;
     for(int i = 0; i < co_count; i++) {
-        if(co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING) {
+        if(co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING || co_list[i]!= current) {
             next = co_list[i];
             break;
         }
@@ -190,7 +188,7 @@ void co_yield() {
         return;
     }
     // switch to next co
-    current = next;
+    if(next!=NULL)  current = next;
     current->status = CO_RUNNING;
     longjmp(&current->context);
     return;
