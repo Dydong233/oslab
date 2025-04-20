@@ -180,7 +180,7 @@ void co_yield() {
     // find the next co
     srand((unsigned int)time(NULL));
     int rand_co = rand() % co_count;
-    printf("rand_co: %d\n", rand_co);
+    printf("co_count: %d    rand_co: %d\n", co_count,rand_co);
 
     // not rand co
     for(int i = 0; i < co_count; i++) {
