@@ -57,6 +57,9 @@ void co_trampoline()
 }
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
+
+    srand((unsigned int)time(NULL));
+
     // init the new_co
     struct co *new_co = malloc(sizeof(struct co));
     memset(new_co,0,sizeof(struct co));
