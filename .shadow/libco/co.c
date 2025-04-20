@@ -50,6 +50,7 @@ struct co {
 
 void co_trampoline()
 {
+    if(current->status == CO_DEAD) return;
     current->status = CO_RUNNING;
     current->func(current->arg);
     current->status = CO_DEAD;
