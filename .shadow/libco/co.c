@@ -187,24 +187,24 @@ void co_yield() {
     // find the next co
     struct co *next = NULL;
     int rand_co;
-    while(233) {
-        // The first situation : current is NULL
-        // The second situation : There is only one co
-        rand_co = rand() % co_count;
-        if(co_list[rand_co]->status != CO_DEAD) {
-            next = co_list[rand_co];
-            // printf("This time choose co %s\n", next->name);
-            break;
-        }
-    }
-
-    // not rand co (just change to anther co)
-    // for(int i = 0; i < co_count; i++) {
-    //     if((co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING) && co_list[i]!= current) {
-    //         next = co_list[i];
+    // while(233) {
+    //     // The first situation : current is NULL
+    //     // The second situation : There is only one co
+    //     rand_co = rand() % co_count;
+    //     if(co_list[rand_co]->status != CO_DEAD) {
+    //         next = co_list[rand_co];
+    //         // printf("This time choose co %s\n", next->name);
     //         break;
     //     }
     // }
+
+    // not rand co (just change to anther co)
+    for(int i = 0; i < co_count; i++) {
+        if((co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING) && co_list[i]!= current) {
+            next = co_list[i];
+            break;
+        }
+    }
 
     // if other co's are dead
     if(next == NULL&&current->status == CO_DEAD) {
