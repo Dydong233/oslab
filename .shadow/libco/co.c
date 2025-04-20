@@ -3,6 +3,7 @@
 #include <stdint.h> 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #define STACK_SIZE 1024*64
 #define MAX_CO 1<<10
