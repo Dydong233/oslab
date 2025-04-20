@@ -177,7 +177,7 @@ void co_yield() {
     // not rand co
     struct co *next = NULL;
     for(int i = 0; i < co_count; i++) {
-        if(co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING || co_list[i]!= current) {
+        if((co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING) && co_list[i]!= current) {
             next = co_list[i];
             break;
         }
