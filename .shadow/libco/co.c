@@ -53,6 +53,7 @@ void co_trampoline()
     current->status = CO_RUNNING;
     current->func(current->arg);
     current->status = CO_DEAD;
+    alive_co--;
     co_yield();
 }
 
@@ -89,7 +90,6 @@ void co_wait(struct co *co) {
     if(co->status == CO_DEAD) {
         printf("co %s is dead\n", co->name);
         free(co);
-        alive_co--;
         return;
     }
     // situation 2: co is running
@@ -176,6 +176,8 @@ void longjmp(struct context *ctx)
 }
 
 void co_yield() {
+    if(!alive_co)   return;
+
     if(current != NULL){
         if(setjmp(&current->context) == 0) {
             if(current->status != CO_DEAD)    current->status = CO_WAITING;
@@ -189,7 +191,6 @@ void co_yield() {
         // The first situation : current is NULL
         // The second situation : There is only one co
         rand_co = rand() % co_count;
-        if(!alive_co)   break;
         if(co_list[rand_co]->status != CO_DEAD) {
             next = co_list[rand_co];
             printf("This time choose co %s\n", next->name);
