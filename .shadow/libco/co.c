@@ -53,7 +53,6 @@ void co_trampoline()
     current->status = CO_RUNNING;
     current->func(current->arg);
     current->status = CO_DEAD;
-    printf("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\n");
     co_yield();
 }
 
