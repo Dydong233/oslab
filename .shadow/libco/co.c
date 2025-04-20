@@ -16,7 +16,7 @@
 
 struct co *current = NULL;
 struct co *co_list[MAX_CO];
-int co_count = 0;
+int co_count = 0,alive_co = 0;
 
 // co's state
 enum co_status {
@@ -79,6 +79,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     new_co->context.rsp = sp;
     new_co->context.rip = (uintptr_t)co_trampoline;
     co_list[co_count++] = new_co;
+    alive_co++;
 
     return new_co;
 }
@@ -88,6 +89,7 @@ void co_wait(struct co *co) {
     if(co->status == CO_DEAD) {
         printf("co %s is dead\n", co->name);
         free(co);
+        alive_co--;
         return;
     }
     // situation 2: co is running
@@ -172,20 +174,22 @@ void longjmp(struct context *ctx)
 #endif
     __builtin_unreachable(); // never return
 }
+
 void co_yield() {
     if(current != NULL){
         if(setjmp(&current->context) == 0) {
             if(current->status != CO_DEAD)    current->status = CO_WAITING;
         }
     }
-    struct co *next = NULL;
 
     // find the next co
+    struct co *next = NULL;
     int rand_co;
     while(233) {
         // The first situation : current is NULL
         // The second situation : There is only one co
         rand_co = rand() % co_count;
+        if(!alive_co)   break;
         if(co_list[rand_co]->status != CO_DEAD) {
             next = co_list[rand_co];
             printf("This time choose co %s\n", next->name);
