@@ -193,7 +193,7 @@ void co_yield() {
         rand_co = rand() % co_count;
         if(co_list[rand_co]->status != CO_DEAD) {
             next = co_list[rand_co];
-            printf("This time choose co %s\n", next->name);
+            // printf("This time choose co %s\n", next->name);
             break;
         }
     }
