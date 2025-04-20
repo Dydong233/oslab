@@ -182,12 +182,11 @@ void co_yield() {
 
     // find the next co
     int rand_co;
-    while(rand_co = rand() % co_count) {
-        if(current == NULL){    // The first co
-            next = rand_co;
-            break;
-        }
-        if(co_list[rand_co]->status == CO_NEW || co_list[rand_co]->status == CO_WAITING) {
+    while(233) {
+        // The first situation : current is NULL
+        // The second situation : There is only one co
+        rand_co = rand() % co_count;
+        if(co_list[rand_co]->status != CO_DEAD) {
             next = co_list[rand_co];
             printf("This time choose co %s\n", next->name);
             break;
