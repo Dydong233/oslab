@@ -54,7 +54,7 @@ void co_trampoline()
     current->func(current->arg);
     current->status = CO_DEAD;
     alive_co--;
-    // co_yield();
+    co_yield();
 }
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
