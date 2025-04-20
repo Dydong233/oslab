@@ -178,7 +178,6 @@ void co_yield() {
     struct co *next = NULL;
 
     // find the next co
-    srand((unsigned int)time(NULL));
     int rand_co = rand() % co_count;
     printf("co_count: %d    rand_co: %d\n", co_count,rand_co);
 
