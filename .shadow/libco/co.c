@@ -171,9 +171,9 @@ void longjmp(struct context *ctx)
     __builtin_unreachable(); // never return
 }
 void co_yield() {
-    if(setjmp(&current->context) == 0) {
-        if(current->status != CO_DEAD) {
-            current->status = CO_WAITING;
+    if(current != NULL){
+        if(setjmp(&current->context) == 0) {
+            if(current->status != CO_DEAD)    current->status = CO_WAITING;
         }
     }
     // not rand co
