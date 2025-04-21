@@ -94,13 +94,13 @@ void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
         :
 		: "b"((uintptr_t)sp), "d"(entry), "a"(arg)
 		: "memory"
-#elif
+#else
         "movl %%esp, -0x8(%0); leal -0xC(%0), %%esp; movl %2, -0xC(%0); call *%1;movl -0x8(%0), %%esp"
         :
         : "b"((uintptr_t)sp), "d"(entry), "a"(arg)
         : "memory"
 #endif
-    );
+    )
 }
 
 void co_yield() {
