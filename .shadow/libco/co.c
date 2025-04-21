@@ -100,7 +100,7 @@ void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
         : "b"((uintptr_t)sp), "d"(entry), "a"(arg)
         : "memory"
 #endif
-    )
+    );
 }
 
 void co_yield() {
