@@ -70,7 +70,19 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 }
 
 void co_wait(struct co *co) {
-
+    current->status = CO_WAITING;
+    co->waiter = current;
+    while(co->status != CO_DEAD)    co_yield();
+    current->status = CO_RUNNING;
+    struct co *h = current;
+    while(h){
+        if(h->next == co){
+            h->next = co->next;
+            break;
+        }
+        h = h->next;
+    }
+    free(co);
 }
 
 void co_yield() {
