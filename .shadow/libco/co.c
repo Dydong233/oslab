@@ -28,8 +28,8 @@ enum co_status {
 struct co {
     struct co *next;
     void (*func)(void *); // co's entry place
-    char name[50]; // co's name
     void *arg;  // co's arg
+    char name[50]; // co's name
 
     enum co_status status;  // co's state
     struct co *waiter;  // other waiters
