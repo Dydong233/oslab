@@ -34,7 +34,7 @@ struct co {
     enum co_status status;  // co's state
     struct co *    waiter;  // other waiters
     jmp_buf context; // save co's reg
-    uint8_t stack[STACK_SIZE];  // co's stack point
+    uint8_t stack[STACK_SIZE+1];  // co's stack point
 };
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
