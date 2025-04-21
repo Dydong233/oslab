@@ -97,9 +97,9 @@ void co_wait(struct co *co) {
     // situation 2: co is running
     if(current != NULL)    current->status = CO_WAITING;
     if(current != NULL)    co->waiter = current;
-    while(co->status != CO_DEAD) {
-        co_yield();
-    }
+    // while(co->status != CO_DEAD) {
+    //     co_yield();
+    // }
     if(current != NULL)    current->status = CO_RUNNING;
     free(co);
 }
