@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <setjmp.h>
+#include <assert.h>
 
 #define STACK_SIZE 1024*64
 #define MAX_CO 1<<10
@@ -111,7 +112,7 @@ void co_yield() {
         do{
             co_next = co_next->next;
         }
-        while(co_next->status == CO_DEAD || co_next == CO_WAITING);
+        while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
         current = co_next;
         if(current->status == CO_NEW){
             assert(current->status == CO_NEW);
