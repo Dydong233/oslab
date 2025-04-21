@@ -27,9 +27,9 @@ enum co_status {
 
 struct co {
     struct co *next;
+    char name[50]; // co's name
     void (*func)(void *); // co's entry place
     void *arg;  // co's arg
-    char name[50]; // co's name
 
     enum co_status status;  // co's state
     struct co *waiter;  // other waiters
