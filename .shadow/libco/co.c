@@ -102,13 +102,6 @@ void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
 
 void co_yield ()
 {
-	if (current == NULL) // init main
-	{
-		current = (struct co *)malloc(sizeof(struct co));
-		current->status = CO_RUNNING;
-		strcpy(current->name, "main");
-		current->next = current;
-	}
 	assert(current);
 	int val = setjmp(current->context);
 	if (val == 0) // co_yield() 被调用时，setjmp 保存寄存器现场后会立即返回 0，此时我们需要选择下一个待运行的协程 (相当于修改 current)，并切换到这个协程运行。
