@@ -25,16 +25,16 @@ enum co_status {
     CO_DEAD = 4,    // has finished
 };
 
-struct co {
-    char name[50]; // co's name
-    void (*func)(void *); // co's entry place
-    void *arg;  // co's arg
-
-    struct co *next;
-    enum co_status status;  // co's state
-    struct co *    waiter;  // other waiters
-    jmp_buf context; // save co's reg
-    uint8_t stack[STACK_SIZE];  // co's stack point
+struct co
+{
+	struct co *next;
+	void (*func)(void *);
+	void *arg;
+	char name[50];
+	enum co_status status;		   // 协程的状态
+	struct co *waiter;			   // 是否有其他协程在等待当前协程
+	jmp_buf context;			   // 寄存器现场 (setjmp.h)
+	uint8_t stack[STACK_SIZE + 1]; // 协程的堆栈						   // uint8_t == unsigned char
 };
 
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
