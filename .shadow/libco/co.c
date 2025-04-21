@@ -36,35 +36,34 @@ struct co {
     jmp_buf context; // save co's reg
     uint8_t stack[STACK_SIZE];  // co's stack point
 };
+struct co *co_start(const char *name, void (*func)(void *), void *arg)
+{
+	struct co *start = (struct co *)malloc(sizeof(struct co));
+	start->arg = arg;
+	start->func = func;
+	start->status = CO_NEW;
+	strcpy(start->name, name);
+	if (current == NULL) // init main
+	{
+		current = (struct co *)malloc(sizeof(struct co));
+		current->status = CO_RUNNING; // BUG !! 写成了 current->status==CO_RUNNING;
+		current->waiter = NULL;
+		strcpy(current->name, "main");
+		current->next = current;
+	}
+	//环形链表
+	struct co *h = current;
+	while (h)
+	{
+		if (h->next == current)
+			break;
 
-struct co *co_start(const char *name, void (*func)(void *), void *arg) {
-    struct co *new_co = (struct co *)malloc(sizeof(struct co));
-    memset(new_co, 0, sizeof(struct co));
-    new_co->name = strdup(name);
-    new_co->func = func;
-    new_co->arg = arg;
-    new_co->status = CO_NEW;
-    // init main
-    if(current == NULL)
-    {
-        current = (struct co *)malloc(sizeof(struct co));
-        memset(current, 0, sizeof(struct co));
-        current->name = strdup("main");
-        current->status = CO_RUNNING;
-        current->waiter = NULL;
-        current->next = current;
-    }
-    // insert to the list
-    struct co *h = current;
-    while(h){
-        if(h->next == current){
-            h->next = new_co;
-            new_co->next = current;
-            break;
-        }
-        h = h->next;
-    }
-    return new_co;
+		h = h->next;
+	}
+	assert(h);
+	h->next = start;
+	start->next = current;
+	return start;
 }
 
 void co_wait(struct co *co) {
