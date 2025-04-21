@@ -32,7 +32,7 @@ struct co {
     void *arg;  // co's arg
 
     enum co_status status;  // co's state
-    struct co *    waiter;  // other waiters
+    struct co *waiter;  // other waiters
     jmp_buf context; // save co's reg
     uint8_t stack[STACK_SIZE+1];  // co's stack point
 };
