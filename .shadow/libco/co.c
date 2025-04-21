@@ -37,6 +37,53 @@ struct co
 	uint8_t stack[STACK_SIZE + 1]; // 协程的堆栈						   // uint8_t == unsigned char
 };
 
+struct co *co_start(const char *name, void (*func)(void *), void *arg) {
+    struct co *new_co = (struct co *)malloc(sizeof(struct co));
+    memset(new_co, 0, sizeof(struct co));
+    strcpy(new_co->name, name);
+    new_co->func = func;
+    new_co->arg = arg;
+    new_co->status = CO_NEW;
+    // init main
+    if(current == NULL)
+    {
+        current = (struct co *)malloc(sizeof(struct co));
+        memset(current, 0, sizeof(struct co));
+        strcpy(current->name, "main");
+        current->status = CO_RUNNING;
+        current->waiter = NULL;
+        current->next = current;
+    }
+    // insert to the list
+    struct co *h = current;
+    while(h){
+        if(h->next == current){
+            h->next = new_co;
+            new_co->next = current;
+            break;
+        }
+        h = h->next;
+    }
+    return new_co;
+}
+
+void co_wait(struct co *co) {
+    current->status = CO_WAITING;
+    co->waiter = current;
+    while(co->status != CO_DEAD)    co_yield();
+    current->status = CO_RUNNING;
+    // delete co from the list
+    struct co *h = current;
+    while(h){
+        if(h->next == co){
+            h->next = co->next;
+            break;
+        }
+        h = h->next;
+    }
+    free(co);
+}
+
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
 {
 	asm volatile(
@@ -54,93 +101,24 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
 	);
 }
 
-struct co *co_start(const char *name, void (*func)(void *), void *arg)
-{
-	struct co *start = (struct co *)malloc(sizeof(struct co));
-	start->arg = arg;
-	start->func = func;
-	start->status = CO_NEW;
-	strcpy(start->name, name);
-	if (current == NULL) // init main
-	{
-		current = (struct co *)malloc(sizeof(struct co));
-		current->status = CO_RUNNING; // BUG !! 写成了 current->status==CO_RUNNING;
-		current->waiter = NULL;
-		strcpy(current->name, "main");
-		current->next = current;
-	}
-	//环形链表
-	struct co *h = current;
-	while (h)
-	{
-		if (h->next == current)
-			break;
-
-		h = h->next;
-	}
-	assert(h);
-	h->next = start;
-	start->next = current;
-	return start;
-}
-
-void co_wait(struct co *co)
-{
-	current->status = CO_WAITING;
-	co->waiter = current;
-	while (co->status != CO_DEAD)
-	{
-		co_yield ();
-	}
-	current->status = CO_RUNNING;
-	struct co *h = current;
-
-	while (h)
-	{
-		if (h->next == co)
-			break;
-		h = h->next;
-	}
-	//从环形链表中删除co
-	h->next = h->next->next;
-	free(co);
-}
-void co_yield ()
-{
-	if (current == NULL) // init main
-	{
-		current = (struct co *)malloc(sizeof(struct co));
-		current->status = CO_RUNNING;
-		strcpy(current->name, "main");
-		current->next = current;
-	}
-	assert(current);
-	int val = setjmp(current->context);
-	if (val == 0) // co_yield() 被调用时，setjmp 保存寄存器现场后会立即返回 0，此时我们需要选择下一个待运行的协程 (相当于修改 current)，并切换到这个协程运行。
-	{
-		// choose co_next
-		struct co *co_next = current;
-		do
-		{
-			co_next = co_next->next;
-		} while (co_next->status == CO_DEAD || co_next->status == CO_WAITING);
-		current = co_next;
-		if (co_next->status == CO_NEW)
-		{
-			assert(co_next->status == CO_NEW);
-			((struct co volatile *)current)->status = CO_RUNNING; //  fogot!!!
-			stack_switch_call(&current->stack[STACK_SIZE], current->func, (uintptr_t)current->arg);
-			((struct co volatile *)current)->status = CO_DEAD;
-			if (current->waiter)
-				current = current->waiter;
-		}
-		else
-		{
-			longjmp(current->context, 1);
-		}
-	}
-	else // longjmp returned(1) ,don't need to do anything
-	{
-		return;
-	}
+void co_yield() {
+    int val = setjmp(current->context);
+    // choose anther co and switch to it
+    if(!val){
+        // choose new or running co
+        struct co *co_next = current;
+        do{
+            co_next = co_next->next;
+        }
+        while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
+        current = co_next;
+        if(current->status == CO_NEW){
+            assert(current->status == CO_NEW);
+            ((struct co volatile *)current)->status = CO_RUNNING;
+            stack_switch_call(&current->stack[STACK_SIZE], current->func,(uintptr_t)current->arg);
+            ((struct co volatile *)current)->status = CO_DEAD;
+            if(current->waiter) current = current->waiter;
+        }
+        else longjmp(current->context, 1);
+    }
 }
