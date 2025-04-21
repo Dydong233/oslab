@@ -26,7 +26,7 @@ enum co_status {
 };
 
 struct co {
-    char *name; // co's name
+    char name[50]; // co's name
     void (*func)(void *); // co's entry place
     void *arg;  // co's arg
 
@@ -40,7 +40,7 @@ struct co {
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     struct co *new_co = (struct co *)malloc(sizeof(struct co));
     memset(new_co, 0, sizeof(struct co));
-    new_co->name = strdup(name);
+    strcpy(new_co->name, name);
     new_co->func = func;
     new_co->arg = arg;
     new_co->status = CO_NEW;
@@ -49,7 +49,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     {
         current = (struct co *)malloc(sizeof(struct co));
         memset(current, 0, sizeof(struct co));
-        current->name = strdup("main");
+        strcpy(current->name, "main");
         current->status = CO_RUNNING;
         current->waiter = NULL;
         current->next = current;
