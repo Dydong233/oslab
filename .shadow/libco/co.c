@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <setjmp.h>
 
 #define STACK_SIZE 1024*64
 #define MAX_CO 1<<10
@@ -21,20 +22,9 @@ int co_count = 0,alive_co = 0;
 // co's state
 enum co_status {
     CO_NEW = 1, // create a co
-    CO_RUNNING, // running
-    CO_WAITING, // on wait
-    CO_DEAD,    // has finished
-};
-
-struct context {
-    uintptr_t rsp;
-    uintptr_t rip;
-    uintptr_t rbx;
-    uintptr_t rbp;
-    uintptr_t r12;
-    uintptr_t r13;
-    uintptr_t r14;
-    uintptr_t r15;
+    CO_RUNNING = 2, // running
+    CO_WAITING = 3, // on wait
+    CO_DEAD = 4,    // has finished
 };
 
 struct co {
@@ -42,9 +32,10 @@ struct co {
     void (*func)(void *); // co's entry place
     void *arg;  // co's arg
 
+    struct co *next;
     enum co_status status;  // co's state
     struct co *    waiter;  // other waiters
-    struct context context; // save co's regs
+    jmp_buf context; // save co's regs
     uint8_t stack[STACK_SIZE];  // co's stack point
 };
 
@@ -59,31 +50,31 @@ void co_trampoline()
 }
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
-
-    srand((unsigned int)time(NULL));
-
-    // init the new_co
-    struct co *new_co = malloc(sizeof(struct co));
-    memset(new_co,0,sizeof(struct co));
+    struct co *new_co = (struct co *)malloc(sizeof(struct co));
+    memset(new_co, 0, sizeof(struct co));
     new_co->name = strdup(name);
     new_co->func = func;
     new_co->arg = arg;
     new_co->status = CO_NEW;
-    new_co->waiter = NULL;
-
-    // calculate the stack point
-    uintptr_t sp = (uintptr_t)(new_co->stack + STACK_SIZE);
-    sp -= sizeof(void*);
-    sp &= ~0xF;
-
-    // push the co_trampoline's frame
-    sp -= sizeof(void*);
-    *(void**)sp = (void*)co_trampoline;
-    new_co->context.rsp = sp;
-    new_co->context.rip = (uintptr_t)co_trampoline;
-    co_list[co_count++] = new_co;
-    alive_co++;
-
+    // init main
+    if(current == NULL)
+    {
+        current = (struct co *)malloc(sizeof(struct co));
+        memset(current, 0, sizeof(struct co));
+        current->name = strdup("main");
+        current->status = CO_RUNNING;
+        current->waiter = NULL;
+        current->next = current;
+    }
+    // insert to the list
+    struct co *h = current;
+    while(h){
+        if(h->next == current){
+            h->next = new_co;
+            new_co->next = current;
+            break;
+        }
+    }
     return new_co;
 }
 
@@ -95,12 +86,9 @@ void co_wait(struct co *co) {
         return;
     }
     // situation 2: co is running
-    if(current != NULL)    current->status = CO_WAITING;
-    if(current != NULL)    co->waiter = current;
-    // while(co->status != CO_DEAD) {
-    //     co_yield();
-    // }
-    if(current != NULL)    current->status = CO_RUNNING;
+    while(co->status != CO_DEAD) {
+        co_yield();
+    }
     free(co);
 }
 
@@ -180,6 +168,7 @@ void longjmp(struct context *ctx)
 void co_yield() {
     if(!alive_co)   return;
 
+    // save current co's context(This co must be running!)
     if(current != NULL){
         if(setjmp(&current->context) == 0) {
             if(current->status != CO_DEAD)    current->status = CO_WAITING;
@@ -199,20 +188,13 @@ void co_yield() {
             break;
         }
     }
-
-    // not rand co (just change to anther co)
-    // for(int i = 0; i < co_count; i++) {
-    //     if((co_list[i]->status == CO_NEW || co_list[i]->status == CO_WAITING) && co_list[i]!= current) {
-    //         next = co_list[i];
-    //         break;
-    //     }
-    // }
-
-    // if other co's are dead
-    if(next == NULL&&current->status == CO_DEAD) {
-        printf("There is no co alive\n");
-        return;
+    // if the next co is new
+    if(next->status == CO_NEW){
+        next->status = CO_RUNNING;
+        
     }
+
+
     // switch to next co
     if(next!=NULL)  current = next;
     current->status = CO_RUNNING;
