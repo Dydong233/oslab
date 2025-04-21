@@ -67,21 +67,26 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     return new_co;
 }
 
-void co_wait(struct co *co) {
-    current->status = CO_WAITING;
-    co->waiter = current;
-    while(co->status != CO_DEAD)    co_yield();
-    current->status = CO_RUNNING;
-    // delete co from the list
-    struct co *h = current;
-    while(h){
-        if(h->next == co){
-            h->next = co->next;
-            break;
-        }
-        h = h->next;
-    }
-    free(co);
+void co_wait(struct co *co)
+{
+	current->status = CO_WAITING;
+	co->waiter = current;
+	while (co->status != CO_DEAD)
+	{
+		co_yield ();
+	}
+	current->status = CO_RUNNING;
+	struct co *h = current;
+
+	while (h)
+	{
+		if (h->next == co)
+			break;
+		h = h->next;
+	}
+	//从环形链表中删除co
+	h->next = h->next->next;
+	free(co);
 }
 
 void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
