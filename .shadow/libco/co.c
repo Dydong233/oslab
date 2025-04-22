@@ -38,6 +38,7 @@ struct co {
 };
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
+    srand((unsigned int)time(NULL));
     struct co *new_co = (struct co *)malloc(sizeof(struct co));
     memset(new_co, 0, sizeof(struct co));
     strcpy(new_co->name, name);
@@ -75,7 +76,7 @@ void co_wait(struct co *co) {
 
     current->status = CO_WAITING;
     co->waiter = current;
-    printf("current: %s, co: %s\n", current->name, co->name);
+    debug("current: %s, co: %s\n", current->name, co->name);
     while(co->status != CO_DEAD)    co_yield();
     current->status = CO_RUNNING;
     // delete co from the list
@@ -113,10 +114,21 @@ void co_yield() {
     if(!val){
         // choose new or running co
         struct co *co_next = current;
+        int rand_num = rand()%10;
+        printf("rand_num: %d\n", rand_num);
+
         do{
             co_next = co_next->next;
+            if(co_next->status == CO_DEAD || co_next->status == CO_WAITING){
+                rand_num--;
+            }
         }
-        while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
+        while(rand_num);
+
+        // do{
+        //     co_next = co_next->next;
+        // }
+        // while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
         current = co_next;
         if(current->status == CO_NEW){
             assert(current->status == CO_NEW);
