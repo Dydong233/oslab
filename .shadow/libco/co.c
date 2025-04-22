@@ -76,7 +76,7 @@ void co_wait(struct co *co) {
 
     current->status = CO_WAITING;
     co->waiter = current;
-    debug("current: %s, co: %s\n", current->name, co->name);
+    printf("current: %s, co: %s\n", current->name, co->name);
     while(co->status != CO_DEAD)    co_yield();
     current->status = CO_RUNNING;
     // delete co from the list
@@ -115,7 +115,7 @@ void co_yield() {
         // choose new or running co
         struct co *co_next = current;
         int rand_num = rand()%10;
-        printf("rand_num: %d\n", rand_num);
+        // printf("rand_num: %d\n", rand_num);
 
         do{
             co_next = co_next->next;
