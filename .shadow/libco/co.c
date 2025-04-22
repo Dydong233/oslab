@@ -77,7 +77,7 @@ void co_wait(struct co *co) {
 
     current->status = CO_WAITING;
     co->waiter = current;
-    printf("current: %s, co: %s\n", current->name, co->name);
+    printf("\ncurrent: %s, co: %s\n", current->name, co->name);
     while(co->status != CO_DEAD)    co_yield();
     current->status = CO_RUNNING;
     // delete co from the list
