@@ -39,7 +39,7 @@ struct co {
 };
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
-    // srand((unsigned int)time(NULL));
+    srand((unsigned int)time(NULL));
     struct co *new_co = (struct co *)malloc(sizeof(struct co));
     memset(new_co, 0, sizeof(struct co));
     strcpy(new_co->name, name);
@@ -115,7 +115,7 @@ void co_yield() {
     if(!val){
         // choose new or running co
         struct co *co_next = current;
-        rand_num = 4;
+        rand_num = rand() % 10+1;
 
         do{
             co_next = co_next->next;
