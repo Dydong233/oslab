@@ -16,7 +16,7 @@
 #endif
 
 struct co *current = NULL;
-int rand_num;
+// int rand_num;
 
 // co's state
 enum co_status {
