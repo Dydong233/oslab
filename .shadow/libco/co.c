@@ -16,7 +16,7 @@
 #endif
 
 struct co *current = NULL;
-// int rand_num;
+int rand_num;
 
 // co's state
 enum co_status {
@@ -115,7 +115,7 @@ void co_yield() {
     if(!val){
         // choose new or running co
         struct co *co_next = current;
-        // int rand_num = rand()%10 + 1;
+        rand_num = rand()%10 + 1;
         // printf("rand_num: %d\n", rand_num);
 
         // do{
