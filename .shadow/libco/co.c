@@ -120,6 +120,7 @@ void co_yield() {
         do{
             co_next = co_next->next;
             if(co_next->status == CO_DEAD || co_next->status == CO_WAITING){
+                puts("1");
                 rand_num--;
             }
         }
