@@ -115,20 +115,20 @@ void co_yield() {
     if(!val){
         // choose new or running co
         struct co *co_next = current;
-        // rand_num = 5;
-
-        // do{
-        //     co_next = co_next->next;
-        //     if(co_next->status == CO_DEAD || co_next->status == CO_WAITING){
-        //         rand_num--;
-        //     }
-        // }
-        // while(rand_num);
+        rand_num = 5;
 
         do{
             co_next = co_next->next;
+            if(co_next->status != CO_DEAD && co_next->status != CO_WAITING){
+                rand_num--;
+            }
         }
-        while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
+        while(rand_num);
+
+        // do{
+        //     co_next = co_next->next;
+        // }
+        // while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
         current = co_next;
         if(current->status == CO_NEW){
             assert(current->status == CO_NEW);
