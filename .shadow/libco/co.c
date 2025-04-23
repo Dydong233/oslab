@@ -112,7 +112,7 @@ void co_yield() {
             rand_num = rand();
             rand_num = rand_num % co_idx;
             co_next = co_list[rand_num];
-            printf("%d\n", rand_num);
+            // printf("%d\n", rand_num);
         }
         while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
 
