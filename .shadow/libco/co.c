@@ -89,7 +89,7 @@ void co_wait(struct co *co) {
         }
         h = h->next;
     }
-    printf("\ncurrent: %s, co: %s\n", current->name, co->name);
+    // printf("\ncurrent: %s, co: %s\n", current->name, co->name);
     free(co);
 }
 
