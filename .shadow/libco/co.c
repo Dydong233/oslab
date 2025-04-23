@@ -38,7 +38,8 @@ struct co {
     enum co_status status;  // co's state
     struct co *waiter;  // other waiters
     jmp_buf context; // save co's reg
-    uint8_t stack[STACK_SIZE+1];  // co's stack point
+    uint8_t stack[STACK_SIZE] __attribute__((aligned(16)));
+
 };
 
 int rand(void) {
