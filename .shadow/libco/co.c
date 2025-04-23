@@ -16,7 +16,8 @@
 #endif
 
 struct co *current = NULL;
-int rand_num;
+int rand_num,rand_idx = 0;
+int rand_list[] = {1,2,3,4,5};
 
 // co's state
 enum co_status {
@@ -115,10 +116,9 @@ void co_yield() {
     if(!val){
         // choose new or running co
         struct co *co_next = current;
-        // rand_num = rand() % 5+1;
-        // printf("This rand_num is : %d\n",rand_num);
-        rand_num = 5;
-
+        rand_num = rand_list[(++rand_idx)%5];
+        printf("This rand_num is : %d\n",rand_num);
+        
         do{
             co_next = co_next->next;
             if(co_next->status != CO_DEAD && co_next->status != CO_WAITING){
