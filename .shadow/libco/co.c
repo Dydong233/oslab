@@ -8,6 +8,7 @@
 #include <assert.h>
 
 #define STACK_SIZE 4 * 1024 * 8
+#define RAND_LEN 100
 
 #ifdef LOCAL_MACHINE
     #define debug(...) printf(__VA_ARGS__)
@@ -17,7 +18,7 @@
 
 struct co *current = NULL;
 int rand_num,rand_idx = 0;
-int rand_list[] = {1,2,3,4,5};
+int rand_list[RAND_LEN];
 
 // co's state
 enum co_status {
@@ -39,8 +40,18 @@ struct co {
     uint8_t stack[STACK_SIZE+1];  // co's stack point
 };
 
-struct co *co_start(const char *name, void (*func)(void *), void *arg) {
+void init_rand() {
     srand((unsigned int)time(NULL));
+    rand_idx = 0;
+    for (int i = 0; i < RAND_LEN; i++) {
+        rand_list[i] = rand() % 7 + 1;
+    }
+    for(int i=0;i<RAND_LEN;i++){
+        printf("%d ",rand_list[i]);
+    }   puts("");
+}
+
+struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     struct co *new_co = (struct co *)malloc(sizeof(struct co));
     memset(new_co, 0, sizeof(struct co));
     strcpy(new_co->name, name);
@@ -50,6 +61,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     // init main
     if(current == NULL)
     {
+        init_rand();
         current = (struct co *)malloc(sizeof(struct co));
         memset(current, 0, sizeof(struct co));
         strcpy(current->name, "main");
@@ -116,9 +128,7 @@ void co_yield() {
     if(!val){
         // choose new or running co
         struct co *co_next = current;
-        // rand_num = rand_list[(++rand_idx)%5];
-        rand_num = random() % 5 + 1;
-        // printf("This rand_num is : %d\n",rand_num);
+        rand_num = rand_list[(++rand_idx)%RAND_LEN];
         
         do{
             co_next = co_next->next;
