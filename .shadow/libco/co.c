@@ -117,7 +117,7 @@ void co_yield() {
         struct co *co_next = current;
         // rand_num = rand() % 5+1;
         // printf("This rand_num is : %d\n",rand_num);
-        rand_num = 4;
+        rand_num = 5;
 
         do{
             co_next = co_next->next;
