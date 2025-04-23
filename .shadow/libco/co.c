@@ -122,7 +122,7 @@ void co_yield() {
         // choose new or running co
         struct co *co_next = current;
         // int rand_num = rand();
-        int rand_num = 1;
+        int rand_num = 3;
 
         do{
             co_next = co_next->next;
