@@ -30,6 +30,7 @@ enum co_status {
 
 struct co {
     void *arg;  // co's arg
+    
     void (*func)(void *); // co's entry place
     
     char name[50]; // co's name
