@@ -124,7 +124,7 @@ void co_yield() {
         // int rand_num = rand();
         // rand_num = rand_num % 10+1;
         // printf("This rand_num is %d\n", rand_num);
-        int rand_num = 2;
+        int rand_num = 1;
 
         do{
             co_next = co_next->next;
