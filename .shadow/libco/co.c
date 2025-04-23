@@ -132,7 +132,6 @@ void co_yield() {
             if(co_next->status != CO_DEAD && co_next->status != CO_WAITING){
                 rand_num--;
             }
-            puts("");
         }
         while(rand_num);
         current = co_next;
