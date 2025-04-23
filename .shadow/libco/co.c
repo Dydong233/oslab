@@ -27,19 +27,16 @@ enum co_status {
     CO_WAITING = 3, // on wait
     CO_DEAD = 4,    // has finished
 };
-
 struct co {
+    struct co *next;
+    void (*func)(void *); // co's entry place
     void *arg;  // co's arg
-
     char name[50]; // co's name
 
-    void (*func)(void *); // co's entry place
-    
     enum co_status status;  // co's state
     struct co *waiter;  // other waiters
     jmp_buf context; // save co's reg
-    uint8_t stack[STACK_SIZE] __attribute__((aligned(16)));
-
+    uint8_t stack[STACK_SIZE+1];  // co's stack point
 };
 
 int rand(void) {
