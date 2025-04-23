@@ -115,9 +115,9 @@ void co_yield() {
     if(!val){
         // choose new or running co
         struct co *co_next = current;
-        rand_num = rand() % 5+1;
-        printf("This rand_num is : %d\n",rand_num);
-        // rand_num = 4;
+        // rand_num = rand() % 5+1;
+        // printf("This rand_num is : %d\n",rand_num);
+        rand_num = 4;
 
         do{
             co_next = co_next->next;
