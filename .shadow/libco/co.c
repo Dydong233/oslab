@@ -132,6 +132,7 @@ void co_yield() {
         // }
         // while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
         current = co_next;
+        printf("This current is : %s\n",current->name);
         if(current->status == CO_NEW){
             assert(current->status == CO_NEW);
             ((struct co volatile *)current)->status = CO_RUNNING;
