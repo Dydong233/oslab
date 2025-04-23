@@ -122,7 +122,7 @@ void co_yield() {
         // choose new or running co
         struct co *co_next = current;
         int rand_num = rand();
-        rand_num = rand_num % 10;
+        rand_num = rand_num % 10+1;
         printf("This rand_num is %d\n", rand_num);
         // int rand_num = 10;
 
