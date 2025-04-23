@@ -17,6 +17,8 @@
 
 struct co *current = NULL;
 static unsigned long int next = 1;
+struct co *co_list[100];
+int co_idx = 0;
 
 // co's state
 enum co_status {
@@ -27,7 +29,6 @@ enum co_status {
 };
 
 struct co {
-    struct co *next;
     void (*func)(void *); // co's entry place
     void *arg;  // co's arg
     char name[50]; // co's name
@@ -60,18 +61,10 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
         strcpy(current->name, "main");
         current->status = CO_RUNNING;
         current->waiter = NULL;
-        current->next = current;
+        co_list[co_idx++] = current;
     }
     // insert to the list
-    struct co *h = current;
-    while(h){
-        if(h->next == current){
-            h->next = new_co;
-            new_co->next = current;
-            break;
-        }
-        h = h->next;
-    }
+    co_list[co_idx++] = new_co;
     return new_co;
 }
 
@@ -85,15 +78,7 @@ void co_wait(struct co *co) {
     co->waiter = current;
     while(co->status != CO_DEAD)    co_yield();
     current->status = CO_RUNNING;
-    // delete co from the list
-    struct co *h = current;
-    while(h){
-        if(h->next == co){
-            h->next = co->next;
-            break;
-        }
-        h = h->next;
-    }
+    
     // printf("\ncurrent: %s, co: %s\n", current->name, co->name);
     free(co);
 }
@@ -121,16 +106,14 @@ void co_yield() {
     if(!val){
         // choose new or running co
         struct co *co_next = current;
-        // int rand_num = rand();
-        int rand_num = 7;
-
+        int rand_num;
+        
         do{
-            co_next = co_next->next;
-            if(co_next->status != CO_DEAD && co_next->status != CO_WAITING){
-                rand_num--;
-            }
+            rand_num = rand();
+            rand_num = rand_num % co_idx;
+            co_next = co_list[rand_num];
         }
-        while(rand_num);
+        while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
 
         current = co_next;
         if(current->status == CO_NEW){
