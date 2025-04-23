@@ -123,6 +123,7 @@ void co_yield() {
         struct co *co_next = current;
         int rand_num = rand();
         rand_num = rand_num % 10;
+        printf("This rand_num is %d\n", rand_num);
         // int rand_num = 10;
 
         do{
