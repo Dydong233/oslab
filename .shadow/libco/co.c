@@ -46,9 +46,6 @@ void init_rand() {
     for (int i = 0; i < RAND_LEN; i++) {
         rand_list[i] = rand() % 7 + 1;
     }
-    for(int i=0;i<RAND_LEN;i++){
-        printf("%d ",rand_list[i]);
-    }   puts("");
 }
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
@@ -137,13 +134,7 @@ void co_yield() {
             }
         }
         while(rand_num);
-
-        // do{
-        //     co_next = co_next->next;
-        // }
-        // while(co_next->status == CO_DEAD || co_next->status == CO_WAITING);
         current = co_next;
-        // printf("This current is : %s\n",current->name);
         if(current->status == CO_NEW){
             assert(current->status == CO_NEW);
             ((struct co volatile *)current)->status = CO_RUNNING;
