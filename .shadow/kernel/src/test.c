@@ -59,7 +59,7 @@ void test0(void)
     assert(*(add512_int + 127) == 271828);
     pmm->free(add512);
 
-    printf("test0: slab allocator passed\n");
+    // printf("test0: slab allocator passed\n");
 }
 
 void test1(void)//page test
