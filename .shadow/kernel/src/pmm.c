@@ -6,6 +6,7 @@
 
 static int isinit = 0;
 uintptr_t start_addr, end_addr, size;
+uintptr_t slab_bound;
 spinlock_t big_kernel_lock = spin_init("big_kernel_lock");
 spinlock_t slab_lock = spin_init("slab_lock");
 
@@ -17,13 +18,12 @@ typedef struct {
     size_t used_count;
 }slab_page;
 // Use slab_info to save different sizes of slabs
-// from 32B to 4KB
 struct Slab_Info{
     uintptr_t start;
     uintptr_t end;
     size_t size;
     slab_page page[Slab_num];
-}slab_info[8];
+}slab_info[5];
 
 int two_pow(int n)
 {
@@ -41,7 +41,7 @@ void init_memory()
     end_addr = (uintptr_t)heap.end;
     size = end_addr - start_addr;
     // init slab: O(5*Slab_num*128)
-    for(int i = 0; i < 8; i++)
+    for(int i = 0; i < 5; i++)
     {
         slab_info[i].size = two_pow(i+5);
         slab_info[i].start = start_addr + i * PAGE_SIZE * Slab_num;  // every slab is 4MB
@@ -51,7 +51,7 @@ void init_memory()
             slab_info[i].page[j].obj_size = slab_info[i].size;
             slab_info[i].page[j].obj_count = PAGE_SIZE / slab_info[i].size;
             slab_info[i].page[j].used_count = 0;
-            for(int k = 0; k < slab_info[i].page[j].obj_count; k++)
+            for(int k = 0; k < 128; k++)
                 slab_info[i].page[j].is_used[k] = false;
         }
 #if DEBUG
@@ -59,6 +59,7 @@ void init_memory()
         printf("obj_size = %d, obj_count = %d\n", slab_info[i].page[0].obj_size, slab_info[i].page[0].obj_count);
 #endif
     }
+    slab_bound = slab_info[4].end;
 
 }
 
@@ -66,9 +67,9 @@ size_t align_the_size(size_t size)
 {
     size_t res;
     // ask for the slab
-    if(size <= PAGE_SIZE){
-        res = PAGE_SIZE;
-        for(int i = 7;i >= 0;i--){
+    if(size <= 512){
+        res = 512;
+        for(int i = 4;i >= 0;i--){
             if(slab_info[i].size >= size)
                 res = slab_info[i].size;
             else break;
@@ -80,7 +81,7 @@ size_t align_the_size(size_t size)
 uintptr_t *get_slab(size_t size)
 {
     int idx = 0;
-    for(int i=0;i<7;i++)
+    for(int i=0;i<5;i++)
         if(slab_info[i].size == size)
             {idx = i; break;}
     for(int i=0;i<Slab_num;i++)
@@ -109,7 +110,7 @@ static void *kalloc(size_t size)
     uintptr_t *res_ptr = NULL;
 
     // get the memory
-    if(size <= PAGE_SIZE)
+    if(size <= 512)
     {
         // choose the lock and find the slab
         spin_lock(&slab_lock);
@@ -125,7 +126,7 @@ static void *kalloc(size_t size)
 void ret_the_slab(void *ptr)
 {
     int idx = 0;
-    for(int i=0;i<7;i++)
+    for(int i=0;i<5;i++)
         if((uintptr_t)ptr >= slab_info[i].start && (uintptr_t)ptr < slab_info[i].end)
             {idx = i; break;}
     int page_num = ((uintptr_t)ptr - slab_info[idx].start) / PAGE_SIZE;
@@ -139,7 +140,7 @@ void ret_the_slab(void *ptr)
 }
 static void kfree(void *ptr)
 {
-    if((uintptr_t)ptr <= PAGE_SIZE)
+    if((uintptr_t)ptr <= slab_bound)
     {
         spin_lock(&slab_lock);
         ret_the_slab(ptr);
