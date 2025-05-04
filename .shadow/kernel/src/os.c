@@ -12,7 +12,7 @@ static void os_run() {
     while (1){
         // if(cnt == 10)   break;
         // printf("This is the %d round of testing\n",++cnt);
-        test0();
+        // test0();
         // test1();
         // test2();
     };

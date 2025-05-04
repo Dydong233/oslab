@@ -2,13 +2,15 @@
 
 #define PAGE_SIZE 4096
 #define Slab_num 1024
-#define DEBUG 0
+#define Buddy_num 1024
+#define DEBUG 1
 
 static int isinit = 0;
 uintptr_t start_addr, end_addr, size;
 uintptr_t slab_bound;
 spinlock_t big_kernel_lock = spin_init("big_kernel_lock");
 spinlock_t slab_lock = spin_init("slab_lock");
+spinlock_t buddy_lock = spin_init("buddy_lock"); 
 
 // Use slab_page to make detailed divisions
 typedef struct {
@@ -18,12 +20,28 @@ typedef struct {
     size_t used_count;
 }slab_page;
 // Use slab_info to save different sizes of slabs
+// from 32B to 4KB
 struct Slab_Info{
     uintptr_t start;
     uintptr_t end;
     size_t size;
     slab_page page[Slab_num];
 }slab_info[8];
+// Use buddy_page to make detailed divisions
+typedef struct {
+    bool is_used[128];  // waste
+    size_t obj_count;
+    size_t obj_size;
+    size_t used_count;
+}buddy_page;
+// Use buddy_info to save different sizes of pages
+// from 8KB to 1M
+struct Buddy_Info{
+    uintptr_t start;
+    uintptr_t end;
+    size_t size;
+    buddy_page page;
+}buddy_info[8];
 
 int two_pow(int n)
 {
@@ -60,7 +78,23 @@ void init_memory()
 #endif
     }
     slab_bound = slab_info[7].end;
-
+    
+    // init buddy
+    for(int i=0;i<8;i++)
+    {
+        buddy_info[i].size = two_pow(i+13);
+        buddy_info[i].start = slab_bound + i * PAGE_SIZE * Buddy_num;
+        buddy_info[i].end = buddy_info[i].start + PAGE_SIZE * Buddy_num;
+        buddy_info[i].page.obj_size = buddy_info[i].size;
+        buddy_info[i].page.obj_count = PAGE_SIZE * Buddy_num / buddy_info[i].size;
+        buddy_info[i].page.used_count = 0;
+        for(int j = 0; j<128 ;j++)
+            buddy_info[i].page.is_used[j] = false;
+#if DEBUG
+        printf("Buddy %d: start = %p, end = %p, size = %d\n", i, buddy_info[i].start, buddy_info[i].end, buddy_info[i].size);
+        printf("obj_size = %d, obj_count = %d\n", buddy_info[i].page.obj_size, buddy_info[i].page.obj_count);
+#endif
+    }
 }
 
 size_t align_the_size(size_t size)
