@@ -5,4 +5,5 @@
  /home/dydong/pwn/os-workbench/kernel/../abstract-machine/am/include/arch/x86_64-qemu.h \
  /home/dydong/pwn/os-workbench/kernel/../abstract-machine/am/include/amdev.h \
  /home/dydong/pwn/os-workbench/kernel/../abstract-machine/klib/include/klib.h \
- /home/dydong/pwn/os-workbench/kernel/../abstract-machine/klib/include/klib-macros.h
+ /home/dydong/pwn/os-workbench/kernel/../abstract-machine/klib/include/klib-macros.h \
+ include/test.h include/mutex.h

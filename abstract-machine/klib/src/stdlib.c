@@ -43,7 +43,7 @@ void *malloc(size_t size) {
   assert(IN_RANGE(addr,heap));
   for(char *p=old;p<(char*)addr;p++)  *p=0;
   // Log
-  printf("Log: The heap range is %d to %d\n",heap.start,heap.end);
+  printf("Log: The heap range is %p to %p\n",heap.start,heap.end);
   printf("Log: Need size is %d\n",size);
   printf("Log: The need range is %d to %d\n",old,addr);
   return old;

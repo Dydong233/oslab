@@ -1,5 +1,5 @@
-/home/dydong/pwn/os-workbench/kernel/build/x86_64-qemu/./src/os.o: \
- /home/dydong/pwn/os-workbench/kernel/src/os.c include/common.h \
+/home/dydong/pwn/os-workbench/kernel/build/x86_64-qemu/./src/mutex.o: \
+ /home/dydong/pwn/os-workbench/kernel/src/mutex.c include/common.h \
  framework/kernel.h \
  /home/dydong/pwn/os-workbench/kernel/../abstract-machine/am/include/am.h \
  /home/dydong/pwn/os-workbench/kernel/../abstract-machine/am/include/arch/x86_64-qemu.h \
