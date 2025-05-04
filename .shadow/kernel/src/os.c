@@ -8,7 +8,13 @@ static void os_run() {
     for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
         putch(*s == '*' ? '0' + cpu_current() : *s);
     }
-    while (1) ;
+    int cnt = 0;
+    while (1){
+        printf("This is the %d round of testing\n",++cnt);
+        // test0();
+        // test1();
+        // test2();
+    };
 }
 
 MODULE_DEF(os) = {
