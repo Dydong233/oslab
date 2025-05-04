@@ -17,7 +17,6 @@ static void pmm_init() {
         (uintptr_t)heap.end
         - (uintptr_t)heap.start
     );
-    malloc(0x10);
 
     printf(
         "Got %d MiB heap: [%p, %p)\n",
