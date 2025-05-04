@@ -2,7 +2,7 @@
 
 #define PAGE_SIZE 4096
 #define Slab_num 1024
-#define DEBUG 1
+#define DEBUG 0
 
 static int isinit = 0;
 uintptr_t start_addr, end_addr, size;
