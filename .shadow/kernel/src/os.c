@@ -9,8 +9,8 @@ static void os_run() {
         putch(*s == '*' ? '0' + cpu_current() : *s);
     }
     while (1){
-        // test0();
-        // test1();
+        test0();
+        test1();
         test2();
     };
 }
