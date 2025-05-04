@@ -134,6 +134,7 @@ void ret_the_slab(void *ptr)
     int obj_num = ((uintptr_t)ptr - slab_info[idx].start - page_num * PAGE_SIZE) / slab_info[idx].size;
     // printf("page_num = %d, obj_num = %d\n", page_num, obj_num);
     assert(slab_info[idx].start + page_num * PAGE_SIZE + obj_num * slab_info[idx].size == (uintptr_t)ptr);
+    printf("Freeing %p and %p\n", ptr,slab_info[idx].start + page_num * PAGE_SIZE + obj_num * slab_info[idx].size);
 }
 static void kfree(void *ptr)
 {
