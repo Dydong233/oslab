@@ -3,11 +3,11 @@
 #define PAGE_SIZE 4096
 #define Slab_num 1024
 #define Buddy_num 1024
-#define DEBUG 1
+#define DEBUG 0
 
 static int isinit = 0;
 uintptr_t start_addr, end_addr, size;
-uintptr_t slab_bound;
+uintptr_t slab_bound, buddy_bound;
 spinlock_t big_kernel_lock = spin_init("big_kernel_lock");
 spinlock_t slab_lock = spin_init("slab_lock");
 spinlock_t buddy_lock = spin_init("buddy_lock"); 
@@ -95,12 +95,13 @@ void init_memory()
         printf("obj_size = %d, obj_count = %d\n", buddy_info[i].page.obj_size, buddy_info[i].page.obj_count);
 #endif
     }
+    buddy_bound = buddy_info[7].end;
 }
 
 size_t align_the_size(size_t size)
 {
     size_t res;
-    // ask for the slab
+    // calculate the size
     if(size <= PAGE_SIZE){
         res = PAGE_SIZE;
         for(int i = 7;i >= 0;i--){
@@ -109,7 +110,15 @@ size_t align_the_size(size_t size)
             else break;
         }
     }
-    else    panic("wait to exploit");
+    else if(size <= PAGE_SIZE * Buddy_num){
+        res = PAGE_SIZE * Buddy_num;
+        for(int i = 7;i >= 0;i--){
+            if(buddy_info[i].size >= size)
+                res = buddy_info[i].size;
+            else break;
+        }
+    }
+    else    panic("You need to many memories!!!\n");
     return res;
 }
 uintptr_t *get_slab(size_t size)
@@ -138,6 +147,29 @@ uintptr_t *get_slab(size_t size)
     }
     return NULL;
 }
+uintptr_t *get_buddy(size_t size)
+{
+    int idx = 0;
+    for(int i=0;i<8;i++)
+        if(buddy_info[i].size == size)
+            {idx = i; break;}
+    if(buddy_info[idx].page.used_count == buddy_info[idx].page.obj_count)    return NULL;
+    // search for the free page
+    for(int i=0;i<buddy_info[idx].page.obj_count;i++)
+    {
+        if(buddy_info[idx].page.is_used[i] == false)
+        {
+            buddy_info[idx].page.is_used[i] = true;
+            buddy_info[idx].page.used_count++;
+            uintptr_t *res_ptr = (uintptr_t *)(buddy_info[idx].start + i * buddy_info[idx].size);
+#if DEBUG
+            printf("Allocate the memory address is %p\n", res_ptr);
+#endif
+            return res_ptr;
+        }
+    }
+    return NULL;
+}
 static void *kalloc(size_t size)
 {
     size = align_the_size(size);
@@ -152,11 +184,15 @@ static void *kalloc(size_t size)
         spin_unlock(&slab_lock);
     }
     else{
-        panic("wait to exploit");
+        // choose the lock and find the buddy
+        spin_lock(&buddy_lock);
+        res_ptr = get_buddy(size);
+        spin_unlock(&buddy_lock);
     }
     return res_ptr;
 }
 
+// kfree's part
 void ret_the_slab(void *ptr)
 {
     int idx = 0;
@@ -172,6 +208,10 @@ void ret_the_slab(void *ptr)
     printf("Free the memory address is %p\n", ptr);
 #endif
 }
+void ret_the_buddy()
+{
+
+}
 static void kfree(void *ptr)
 {
     if((uintptr_t)ptr <= slab_bound)
@@ -180,7 +220,13 @@ static void kfree(void *ptr)
         ret_the_slab(ptr);
         spin_unlock(&slab_lock);
     }
-    else    panic("wait to exploit");
+    else if((uintptr_t)ptr <= buddy_bound)
+    {
+        spin_lock(&buddy_lock);
+        ret_the_buddy(ptr);
+        spin_unlock(&buddy_lock);
+    }
+    else    panic("Kfree a wrong address\n");
 }
 
 static void pmm_init() {
