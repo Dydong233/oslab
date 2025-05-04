@@ -114,62 +114,80 @@ void test1(void)
     printf("test0: large block allocator passed\n");
 }
 
-void test2(void) //混合的内存申请
+void test2(void)
 {
-	void *add = pmm->alloc(4096);
-	if (add == NULL)
-	{
-		printf("add is NULL");
-		assert(0);
-	}
-	else
-		printf("add: %p\n", add);
-	char *add_char=(char *)add;
-	*add_char='a';
-	*(add_char+4095)='b';
-	void *add1 = pmm->alloc(1024);
-	if (add1 == NULL)
-	{
-		printf("add1 is NULL");
-		assert(0);
-	}
-	else
-		printf("add1: %p\n", add1);
-	char *add_char1=(char *)add1;
-	*add_char1='c';
-	*(add_char1+1023)='d';
-	assert(*add_char=='a');
-	assert(*(add_char+4095)=='b');
-	pmm->free(add);
-	assert(*add_char1=='c');
-	assert(*(add_char1+1023)=='d');
-	void *add2 = pmm->alloc(45);
-	if (add2 == NULL)
-	{
-		printf("add2 is NULL");
-		assert(0);
-	}
-	else
-		printf("add2: %p\n", add2);
-	char *add_char2=(char *)add2;
-	*add_char2='e';
-	*(add_char2+44)='f';
-	pmm->free(add1);
-	assert(*add_char2=='e');
-	assert(*(add_char2+44)=='f');
-	add = pmm->alloc(4096);
-	if (add == NULL)
-	{
-		printf("add is NULL");
-		assert(0);
-	}
-	else
-		printf("add: %p\n", add);
-	add_char=(char *)add;
-	*add_char='g';
-	*(add_char+4095)='h';
-	pmm->free(add2);
-	assert(*add_char=='g');
-	assert(*(add_char+4095)=='h');
-	pmm->free(add);
+    // 分配 64B
+    void *add64 = pmm->alloc(64);
+    assert(add64 != NULL);
+    printf("add64: %p\n", add64);
+    int *add64_int = (int *)add64;
+    *add64_int = 111;
+    *(add64_int + ((64 - 4) / 4)) = 222;
+
+    // 分配 256B
+    void *add256 = pmm->alloc(256);
+    assert(add256 != NULL);
+    printf("add256: %p\n", add256);
+    int *add256_int = (int *)add256;
+    *add256_int = 333;
+    *(add256_int + ((256 - 4) / 4)) = 444;
+
+    // 分配 1024B
+    void *add1k = pmm->alloc(1024);
+    assert(add1k != NULL);
+    printf("add1k: %p\n", add1k);
+    int *add1k_int = (int *)add1k;
+    *add1k_int = 555;
+    *(add1k_int + ((1024 - 4) / 4)) = 666;
+
+    // 分配 16KB
+    void *add16k = pmm->alloc(16 * 1024);
+    assert(add16k != NULL);
+    printf("add16k: %p\n", add16k);
+    int *add16k_int = (int *)add16k;
+    *add16k_int = 777;
+    *(add16k_int + ((16 * 1024 - 4) / 4)) = 888;
+
+    // 分配 256KB
+    void *add256k = pmm->alloc(256 * 1024);
+    assert(add256k != NULL);
+    printf("add256k: %p\n", add256k);
+    int *add256k_int = (int *)add256k;
+    *add256k_int = 999;
+    *(add256k_int + ((256 * 1024 - 4) / 4)) = 101010;
+
+    printf("cpu: %d\n", cpu_current());
+
+    // 验证写入数据
+    assert(*add64_int == 111);
+    assert(*(add64_int + ((64 - 4) / 4)) == 222);
+
+    assert(*add256_int == 333);
+    assert(*(add256_int + ((256 - 4) / 4)) == 444);
+
+    assert(*add1k_int == 555);
+    assert(*(add1k_int + ((1024 - 4) / 4)) == 666);
+
+    assert(*add16k_int == 777);
+    assert(*(add16k_int + ((16 * 1024 - 4) / 4)) == 888);
+
+    assert(*add256k_int == 999);
+    assert(*(add256k_int + ((256 * 1024 - 4) / 4)) == 101010);
+
+    // 释放部分并测试保留内容
+    pmm->free(add64);
+    pmm->free(add256);
+    pmm->free(add1k);
+
+    assert(*add16k_int == 777);
+    assert(*(add16k_int + ((16 * 1024 - 4) / 4)) == 888);
+
+    assert(*add256k_int == 999);
+    assert(*(add256k_int + ((256 * 1024 - 4) / 4)) == 101010);
+
+    // 最终释放
+    pmm->free(add16k);
+    pmm->free(add256k);
+
+    printf("stress_test_mixed_alloc: passed\n");
 }
