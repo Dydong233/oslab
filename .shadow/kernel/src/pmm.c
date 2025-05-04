@@ -23,7 +23,7 @@ struct Slab_Info{
     uintptr_t end;
     size_t size;
     slab_page page[Slab_num];
-}slab_info[5];
+}slab_info[8];
 
 int two_pow(int n)
 {
