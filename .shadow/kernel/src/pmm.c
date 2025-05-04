@@ -69,6 +69,9 @@ void init_memory()
     manager_area.start = end_addr-PAGE_SIZE * 256 * 20;
     manager_area.pos = manager_area.start;
     manager_area.end = end_addr;
+#if DEBUG
+    printf("manager_area: start = %p, end = %p\n", manager_area.start, manager_area.end);
+#endif
     // init slab: O(5*Slab_num*128)
     for(int i = 0; i < 8; i++)
     {
