@@ -10,6 +10,7 @@ static void os_run() {
     }
     int cnt = 0;
     while (1){
+        if(cnt == 10)   break;
         printf("This is the %d round of testing\n",++cnt);
         test0();
         // test1();
