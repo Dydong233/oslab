@@ -49,7 +49,25 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 			char *s = va_arg(ap,char *);
 			for(;*s;s++)	*des++ = *s;	
 		}
-		else	panic("Input other formats!");
+		else if(*src == 'p'){	// input an pointer
+			void *ptr = va_arg(ap,void *);
+			unsigned long val = (unsigned long)ptr;
+			char buf[25];
+			int len = 0;
+			*des++ = '0';
+			*des++ = 'x';
+			if(val == 0)	*des++ = '0';
+			else{
+				while(val){
+					int t = val%16;
+					if(t<10)	buf[len++] = t+'0';
+					else buf[len++] = t-10+'a';
+					val /= 16;
+				}
+				for(--len;len>=0;len--)	*des++ = buf[len];
+			}
+		}	
+		else panic("Input other formats!");
 		src++;
 	}
 	*des = '\x00';
