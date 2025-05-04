@@ -208,9 +208,19 @@ void ret_the_slab(void *ptr)
     printf("Free the memory address is %p\n", ptr);
 #endif
 }
-void ret_the_buddy()
+void ret_the_buddy(void *ptr)
 {
-
+    int idx = 0;
+    for(int i=0;i<8;i++)
+        if((uintptr_t)ptr >= buddy_info[i].start && (uintptr_t)ptr < buddy_info[i].end)
+            {idx = i; break;}
+    int obj_num = ((uintptr_t)ptr - buddy_info[idx].start) / buddy_info[idx].size;
+    assert(buddy_info[idx].start + obj_num * buddy_info[idx].size == (uintptr_t)ptr);
+    buddy_info[idx].page.is_used[obj_num] = false;
+    buddy_info[idx].page.used_count--;
+#if DEBUG
+    printf("Free the memory address is %p\n", ptr);
+#endif
 }
 static void kfree(void *ptr)
 {
