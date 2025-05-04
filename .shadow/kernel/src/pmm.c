@@ -8,13 +8,19 @@
 static int isinit = 0;
 uintptr_t start_addr, end_addr, size;
 uintptr_t slab_bound, buddy_bound;
+bool *tag_the_used;
 spinlock_t big_kernel_lock = spin_init("big_kernel_lock");
 spinlock_t slab_lock = spin_init("slab_lock");
 spinlock_t buddy_lock = spin_init("buddy_lock"); 
 
+struct Manager_area{
+    uintptr_t pos;
+    uintptr_t start;
+    uintptr_t end;
+}manager_area;
 // Use slab_page to make detailed divisions
 typedef struct {
-    bool is_used[128];  // waste
+    bool *is_used;  // waste
     size_t obj_count;
     size_t obj_size;
     size_t used_count;
@@ -29,7 +35,7 @@ struct Slab_Info{
 }slab_info[8];
 // Use buddy_page to make detailed divisions
 typedef struct {
-    bool is_used[128];  // waste
+    bool *is_used;  // waste
     size_t obj_count;
     size_t obj_size;
     size_t used_count;
@@ -58,6 +64,11 @@ void init_memory()
     start_addr = (uintptr_t)heap.start;
     end_addr = (uintptr_t)heap.end;
     size = end_addr - start_addr;
+    // init manager_area
+    // the distance between the start and end address is 20MB
+    manager_area.start = end_addr-PAGE_SIZE * 256 * 20;
+    manager_area.pos = manager_area.start;
+    manager_area.end = end_addr;
     // init slab: O(5*Slab_num*128)
     for(int i = 0; i < 8; i++)
     {
@@ -69,8 +80,14 @@ void init_memory()
             slab_info[i].page[j].obj_size = slab_info[i].size;
             slab_info[i].page[j].obj_count = PAGE_SIZE / slab_info[i].size;
             slab_info[i].page[j].used_count = 0;
-            for(int k = 0; k < 128; k++)
+            for(int k=0; k<slab_info[i].page[j].obj_count ; k++)
+            {
+                if(k == 0) {
+                    slab_info[i].page[j].is_used = (bool *)manager_area.pos;
+                    manager_area.pos += slab_info[i].page[j].obj_count * sizeof(bool);
+                }
                 slab_info[i].page[j].is_used[k] = false;
+            }
         }
 #if DEBUG
         printf("Slab %d: start = %p, end = %p, size = %d\n", i, slab_info[i].start, slab_info[i].end, slab_info[i].size);
@@ -88,8 +105,14 @@ void init_memory()
         buddy_info[i].page.obj_size = buddy_info[i].size;
         buddy_info[i].page.obj_count = PAGE_SIZE * Buddy_num / buddy_info[i].size;
         buddy_info[i].page.used_count = 0;
-        for(int j = 0; j<128 ;j++)
+        for(int j=0;j<buddy_info[i].page.obj_count;j++)
+        {
+            if(j == 0) {
+                buddy_info[i].page.is_used = (bool *)manager_area.pos;
+                manager_area.pos += buddy_info[i].page.obj_count * sizeof(bool);
+            }
             buddy_info[i].page.is_used[j] = false;
+        }
 #if DEBUG
         printf("Buddy %d: start = %p, end = %p, size = %d\n", i, buddy_info[i].start, buddy_info[i].end, buddy_info[i].size);
         printf("obj_size = %d, obj_count = %d\n", buddy_info[i].page.obj_size, buddy_info[i].page.obj_count);
