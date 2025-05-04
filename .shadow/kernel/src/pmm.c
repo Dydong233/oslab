@@ -41,7 +41,7 @@ void init_memory()
     end_addr = (uintptr_t)heap.end;
     size = end_addr - start_addr;
     // init slab: O(5*Slab_num*128)
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 8; i++)
     {
         slab_info[i].size = two_pow(i+5);
         slab_info[i].start = start_addr + i * PAGE_SIZE * Slab_num;  // every slab is 4MB
@@ -59,7 +59,7 @@ void init_memory()
         printf("obj_size = %d, obj_count = %d\n", slab_info[i].page[0].obj_size, slab_info[i].page[0].obj_count);
 #endif
     }
-    slab_bound = slab_info[4].end;
+    slab_bound = slab_info[7].end;
 
 }
 
