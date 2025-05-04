@@ -93,7 +93,7 @@ uintptr_t *get_slab(size_t size)
                 slab_info[idx].page[i].is_used[j] = true;
                 slab_info[idx].page[i].used_count++;
                 uintptr_t *res_ptr = (uintptr_t *)(slab_info[idx].start + i * PAGE_SIZE + j * slab_info[idx].size);
-#ifdef DEBUG
+#if DEBUG
                 printf("This memory address is %p\n", res_ptr);
 #endif
                 return res_ptr;
