@@ -6,6 +6,7 @@
 
 static int isinit = 0;
 uintptr_t start_addr, end_addr, size;
+uintptr_t slab_bound;
 spinlock_t big_kernel_lock = spin_init("big_kernel_lock");
 spinlock_t slab_lock = spin_init("slab_lock");
 
@@ -58,6 +59,7 @@ void init_memory()
         printf("obj_size = %d, obj_count = %d\n", slab_info[i].page[0].obj_size, slab_info[i].page[0].obj_count);
 #endif
     }
+    slab_bound = slab_info[7].end;
 
 }
 
@@ -138,7 +140,7 @@ void ret_the_slab(void *ptr)
 }
 static void kfree(void *ptr)
 {
-    if((uintptr_t)ptr <= PAGE_SIZE)
+    if((uintptr_t)ptr <= slab_bound)
     {
         spin_lock(&slab_lock);
         ret_the_slab(ptr);
