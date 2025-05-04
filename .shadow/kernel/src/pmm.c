@@ -6,8 +6,10 @@
 
 static int isinit = 0;
 uintptr_t start_addr, end_addr, size;
+uintptr_t slab_bound;
 spinlock_t big_kernel_lock = spin_init("big_kernel_lock");
 spinlock_t slab_lock = spin_init("slab_lock");
+spinlock_t slab_unlock = spin_init("slab_unlock");
 
 // Use slab_page to make detailed divisions
 typedef struct {
@@ -58,6 +60,7 @@ void init_memory()
         printf("obj_size = %d, obj_count = %d\n", slab_info[i].page[0].obj_size, slab_info[i].page[0].obj_count);
 #endif
     }
+    slab_bound = slab_info[4].end;
 
 }
 
@@ -121,9 +124,26 @@ static void *kalloc(size_t size)
     return res_ptr;
 }
 
-static void kfree(void *ptr) {
-    // TODO
-    // You can add more .c files to the repo.
+void ret_the_slab(void *ptr)
+{
+    int idx = 0;
+    for(int i=0;i<5;i++)
+        if((uintptr_t)ptr >= slab_info[i].start && (uintptr_t)ptr < slab_info[i].end)
+            {idx = i; break;}
+    int page_num = ((uintptr_t)ptr - slab_info[idx].start) / PAGE_SIZE;
+    int obj_num = ((uintptr_t)ptr - slab_info[idx].start - page_num * PAGE_SIZE) / slab_info[idx].size;
+    // printf("page_num = %d, obj_num = %d\n", page_num, obj_num);
+    assert(slab_info[idx].start + page_num * PAGE_SIZE + obj_num * slab_info[idx].size == (uintptr_t)ptr);
+}
+static void kfree(void *ptr)
+{
+    if((uintptr_t)ptr <= slab_bound)
+    {
+        spin_lock(&slab_unlock);
+        ret_the_slab(ptr);
+        spin_unlock(&slab_unlock);
+    }
+    else    panic("wait to exploit");
 }
 
 static void pmm_init() {
