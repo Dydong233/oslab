@@ -10,8 +10,8 @@ static void os_run() {
     }
     while (1){
         // test0();
-        // test1();
-        test2();
+        test1();
+        // test2();
     };
 }
 

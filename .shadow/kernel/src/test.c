@@ -49,49 +49,69 @@ void test0(void)
 	pmm->free(add3);
 }
 
-void test1(void)//page test
+void test1(void)
 {
-	void *add = pmm->alloc(4096);
-	if (add == NULL)
-	{
-		printf("add is NULL");
-		assert(0);
-	}
-	else
-		printf("add: %p\n", add);
-	char *add_char=(char *)add;
-	*add_char='a';
-	*(add_char+4095)='b';
-	void *add1 = pmm->alloc(4096);
-	if (add1 == NULL)
-	{
-		printf("add1 is NULL");
-		assert(0);
-	}
-	else
-		printf("add1: %p\n", add1);
+    // 分配 16KB = 16 * 1024 字节
+    void *add16k = pmm->alloc(16 * 1024);
+    if (add16k == NULL) {
+        printf("add16k is NULL\n");
+        assert(0);
+    } else {
+        printf("add16k: %p\n", add16k);
+    }
 
-	// for(int i=0;i<=5;++i)
-	// {
-	// 	void *add = pmm->alloc(4096);
-	// 	if (add == NULL)
-	// 	{
-	// 		printf("add is NULL");
-	// 		assert(0);
-	// 	}
-	// 	else
-	// 		printf("add: %p\n", add);
-	// }
+    int *add16k_int = (int *)add16k;
+    *add16k_int = 123456;
+    *(add16k_int + ((16 * 1024 - 4) / 4)) = 654321; // 写入最后一个 int
 
-	char *add_char1=(char *)add1;
-	*add_char1='c';
-	*(add_char1+4095)='d';
-	assert(*add_char=='a');
-	assert(*(add_char+4095)=='b');
-	pmm->free(add);
-	assert(*add_char1=='c');
-	assert(*(add_char1+4095)=='d');
-	pmm->free(add1);
+    // 分配 128KB = 128 * 1024 字节
+    void *add128k = pmm->alloc(128 * 1024);
+    if (add128k == NULL) {
+        printf("add128k is NULL\n");
+        assert(0);
+    } else {
+        printf("add128k: %p\n", add128k);
+    }
+
+    int *add128k_int = (int *)add128k;
+    *add128k_int = 111111;
+    *(add128k_int + ((128 * 1024 - 4) / 4)) = 222222;
+
+    // 分配 512KB = 512 * 1024 字节
+    void *add512k = pmm->alloc(512 * 1024);
+    if (add512k == NULL) {
+        printf("add512k is NULL\n");
+        assert(0);
+    } else {
+        printf("add512k: %p\n", add512k);
+    }
+
+    int *add512k_int = (int *)add512k;
+    *add512k_int = 333333;
+    *(add512k_int + ((512 * 1024 - 4) / 4)) = 444444;
+
+    printf("cpu: %d\n", cpu_current());
+
+    // 验证内容
+    assert(*add16k_int == 123456);
+    assert(*(add16k_int + ((16 * 1024 - 4) / 4)) == 654321);
+
+    assert(*add128k_int == 111111);
+    assert(*(add128k_int + ((128 * 1024 - 4) / 4)) == 222222);
+
+    assert(*add512k_int == 333333);
+    assert(*(add512k_int + ((512 * 1024 - 4) / 4)) == 444444);
+
+    // 释放并验证数据保留（仅演示是否仍可访问）
+    pmm->free(add16k);
+    pmm->free(add128k);
+
+    assert(*add512k_int == 333333);
+    assert(*(add512k_int + ((512 * 1024 - 4) / 4)) == 444444);
+
+    pmm->free(add512k);
+
+    printf("test0: large block allocator passed\n");
 }
 
 void test2(void) //混合的内存申请
