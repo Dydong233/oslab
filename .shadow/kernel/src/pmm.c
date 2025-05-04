@@ -76,21 +76,43 @@ size_t align_the_size(size_t size)
     else    panic("wait to exploit");
     return res;
 }
-void get_slab(size_t size)
+uintptr_t *get_slab(size_t size)
 {
-    
+    int idx = 0;
+    for(int i=0;i<5;i++)
+        if(slab_info[i].size == size)
+            {idx = i; break;}
+    for(int i=0;i<Slab_num;i++)
+    {
+        if(slab_info[idx].page[i].used_count == slab_info[idx].page[i].obj_count)   continue;
+        // search for the free page
+        for(int j=0;j<slab_info[idx].page[i].obj_count;j++)
+        {
+            if(slab_info[idx].page[i].is_used[j] == false)
+            {
+                slab_info[idx].page[i].is_used[j] = true;
+                slab_info[idx].page[i].used_count++;
+                uintptr_t *res_ptr = (uintptr_t *)(slab_info[idx].start + i * PAGE_SIZE + j * slab_info[idx].size);
+#ifdef DEBUG
+                printf("This memory address is %p\n", res_ptr);
+#endif
+                return res_ptr;
+            }
+        }
+    }
+    return NULL;
 }
 static void *kalloc(size_t size)
 {
     size = align_the_size(size);
-    uintptr_t* res_ptr = NULL;
+    uintptr_t *res_ptr = NULL;
 
     // get the memory
     if(size <= 512)
     {
         // choose the lock and find the slab
         spin_lock(&slab_lock);
-        get_slab(size);
+        res_ptr = get_slab(size);
         spin_unlock(&slab_lock);
     }
     else{
