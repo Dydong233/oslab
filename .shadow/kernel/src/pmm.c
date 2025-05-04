@@ -6,9 +6,11 @@
 
 static int isinit = 0;
 uintptr_t start_addr, end_addr, size;
+spinlock_t big_kernel_lock = spin_init("big_kernel_lock");
+spinlock_t slab_lock = spin_init("slab_lock");
 
 // Use slab_page to make detailed divisions
-typedef struct slab_page{
+typedef struct {
     bool is_used[128];  // waste
     size_t obj_count;
     size_t obj_size;
@@ -31,6 +33,8 @@ int two_pow(int n)
 }
 void init_memory()
 {
+    if(isinit)  return;
+    isinit = 1;
     // init heap
     start_addr = (uintptr_t)heap.start;
     end_addr = (uintptr_t)heap.end;
@@ -72,9 +76,12 @@ size_t align_the_size(size_t size)
     else    panic("wait to exploit");
     return res;
 }
+void get_slab(size_t size)
+{
+    
+}
 static void *kalloc(size_t size)
 {
-    if(!isinit) {isinit = 1; init_memory();}
     size = align_the_size(size);
     uintptr_t* res_ptr = NULL;
 
@@ -82,7 +89,9 @@ static void *kalloc(size_t size)
     if(size <= 512)
     {
         // choose the lock and find the slab
-        
+        spin_lock(&slab_lock);
+        get_slab(size);
+        spin_unlock(&slab_lock);
     }
     else{
         panic("wait to exploit");
@@ -100,11 +109,14 @@ static void pmm_init() {
         (uintptr_t)heap.end
         - (uintptr_t)heap.start
     );
-
     printf(
         "Got %d MiB heap: [%p, %p)\n",
         pmsize >> 20, heap.start, heap.end
     );
+
+    spin_lock(&big_kernel_lock);
+    init_memory();
+    spin_unlock(&big_kernel_lock);
 }
 
 MODULE_DEF(pmm) = {
