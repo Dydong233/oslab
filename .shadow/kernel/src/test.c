@@ -5,7 +5,7 @@ void test0(void)
     // 分配 32 字节
     void *add32 = pmm->alloc(32);
     assert(add32 != NULL);
-    // printf("add32: %p\n", add32);
+    printf("add32: %p\n", add32);
     int *add32_int = (int *)add32;
     *add32_int = 123;
     *(add32_int + 6) = 456; // 假设使用满 32B
@@ -13,7 +13,7 @@ void test0(void)
     // 分配 64 字节
     void *add64 = pmm->alloc(64);
     assert(add64 != NULL);
-    // printf("add64: %p\n", add64);
+    printf("add64: %p\n", add64);
     int *add64_int = (int *)add64;
     *add64_int = 789;
     *(add64_int + 15) = 101112;
@@ -21,7 +21,7 @@ void test0(void)
     // 分配 128 字节
     void *add128 = pmm->alloc(128);
     assert(add128 != NULL);
-    // printf("add128: %p\n", add128);
+    printf("add128: %p\n", add128);
     int *add128_int = (int *)add128;
     *add128_int = 2024;
     *(add128_int + 31) = 56789;
@@ -29,7 +29,7 @@ void test0(void)
     // 分配 512 字节
     void *add512 = pmm->alloc(512);
     assert(add512 != NULL);
-    // printf("add512: %p\n", add512);
+    printf("add512: %p\n", add512);
     int *add512_int = (int *)add512;
     *add512_int = 314159;
     *(add512_int + 127) = 271828;
@@ -59,7 +59,7 @@ void test0(void)
     assert(*(add512_int + 127) == 271828);
     pmm->free(add512);
 
-    // printf("test0: slab allocator passed\n");
+    printf("test0: slab allocator passed\n");
 }
 
 void test1(void)//page test
