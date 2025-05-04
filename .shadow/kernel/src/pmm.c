@@ -55,18 +55,39 @@ void init_memory()
 #endif
     }
 
-
 }
 
-
+size_t align_the_size(size_t size)
+{
+    size_t res;
+    // ask for the slab
+    if(size <= 512){
+        res = 512;
+        for(int i = 4;i >= 0;i--){
+            if(slab_info[i].size >= size)
+                res = slab_info[i].size;
+            else break;
+        }
+    }
+    else    panic("wait to exploit");
+    return res;
+}
 static void *kalloc(size_t size)
 {
-    if(!isinit){
-        isinit = 1;
-        init_memory();
-    }
+    if(!isinit) {isinit = 1; init_memory();}
+    size = align_the_size(size);
+    uintptr_t* res_ptr = NULL;
 
-    return NULL;
+    // get the memory
+    if(size <= 512)
+    {
+        // choose the lock and find the slab
+        
+    }
+    else{
+        panic("wait to exploit");
+    }
+    return res_ptr;
 }
 
 static void kfree(void *ptr) {
