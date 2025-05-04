@@ -9,7 +9,6 @@ uintptr_t start_addr, end_addr, size;
 uintptr_t slab_bound;
 spinlock_t big_kernel_lock = spin_init("big_kernel_lock");
 spinlock_t slab_lock = spin_init("slab_lock");
-spinlock_t slab_unlock = spin_init("slab_unlock");
 
 // Use slab_page to make detailed divisions
 typedef struct {
@@ -97,7 +96,7 @@ uintptr_t *get_slab(size_t size)
                 slab_info[idx].page[i].used_count++;
                 uintptr_t *res_ptr = (uintptr_t *)(slab_info[idx].start + i * PAGE_SIZE + j * slab_info[idx].size);
 #if DEBUG
-                printf("This memory address is %p\n", res_ptr);
+                printf("Allocate the memory address is %p\n", res_ptr);
 #endif
                 return res_ptr;
             }
@@ -132,17 +131,20 @@ void ret_the_slab(void *ptr)
             {idx = i; break;}
     int page_num = ((uintptr_t)ptr - slab_info[idx].start) / PAGE_SIZE;
     int obj_num = ((uintptr_t)ptr - slab_info[idx].start - page_num * PAGE_SIZE) / slab_info[idx].size;
-    // printf("page_num = %d, obj_num = %d\n", page_num, obj_num);
     assert(slab_info[idx].start + page_num * PAGE_SIZE + obj_num * slab_info[idx].size == (uintptr_t)ptr);
-    printf("Freeing %p and %p\n", ptr,slab_info[idx].start + page_num * PAGE_SIZE + obj_num * slab_info[idx].size);
+    slab_info[idx].page[page_num].is_used[obj_num] = false;
+    slab_info[idx].page[page_num].used_count--;
+#if DEBUG
+    printf("Free the memory address is %p\n", ptr);
+#endif
 }
 static void kfree(void *ptr)
 {
     if((uintptr_t)ptr <= slab_bound)
     {
-        spin_lock(&slab_unlock);
+        spin_lock(&slab_lock);
         ret_the_slab(ptr);
-        spin_unlock(&slab_unlock);
+        spin_unlock(&slab_lock);
     }
     else    panic("wait to exploit");
 }
