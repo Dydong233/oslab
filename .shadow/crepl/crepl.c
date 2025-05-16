@@ -10,7 +10,7 @@ int write_function_to_file(const char *function_body)
     // check the line's syntax
     char tmp_file[] = "/tmp/tmp_function.c";
     int fd = mkstemps(tmp_file,2);
-    assert(fd>=0);
+    if(fd == -1)    {perror("mkstemps");    return -1;}
     FILE *fp = fdopen(fd,"w");
     assert(fp>=0);
     fprintf(fp,"%s\n",function_body);
