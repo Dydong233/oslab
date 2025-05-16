@@ -8,9 +8,9 @@ int main(int argc, char *argv[]) {
         printf("crepl> ");
         fflush(stdout);
 
-        if (!fgets(line, sizeof(line), stdin)) {
-            break;
-        }
+        if (!fgets(line, sizeof(line), stdin))  break;
+
+        printf("%s", line);
 
         // To be implemented.
         printf("Got %zu chars.\n", strlen(line));
