@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <assert.h>
 
 int write_function_to_file(const char *function_body)
 {
     // check the line's syntax
     char tmp_file[] = "/tmp/tmp_function.c";
-    int fd = mkstmps(tmp_file,2);
+    int fd = mkstemps(tmp_file,2);
     assert(fd>=0);
     FILE *fp = fdopen(fd,"w");
     assert(fp>=0);
