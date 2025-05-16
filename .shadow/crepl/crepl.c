@@ -31,16 +31,8 @@ int write_function_to_file(const char *function_body)
         perror("waitpid");
         exit(1);
     }
-    if (WIFEXITED(status)) {
-        int exit_status = WEXITSTATUS(status);
-        if (exit_status == 0) {
-            printf("Syntax OK\n");
-            
-            return 0;
-        } else {
-            return -1;
-        }
-    }
+    if (WIFEXITED(status))   return WEXITSTATUS(status);
+    return -1;
 }
 
 int main(int argc, char *argv[]) {
