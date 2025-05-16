@@ -1,5 +1,46 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+int write_function_to_file(const char *function_body)
+{
+    // check the line's syntax
+    char tmp_file[] = "/tmp/tmp_function.c";
+    int fd = mkstmps(tmp_file,2);
+    assert(fd>=0);
+    FILE *fp = fdopen(fd,"w");
+    assert(fp>=0);
+    fprintf(fp,"%s\n",function_body);
+    fclose(fp);
+    
+    // compile the function and check for syntax errors
+    pid_t pid = fork();
+    assert(pid>=0);
+    if(pid == 0){
+        const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
+        execvp("gcc", (char *const *)args);
+        perror("execvp");
+        exit(127);
+    }
+    // father pid
+    int status;
+    if(waitpid(pid, &status, 0) == -1) {
+        perror("waitpid");
+        exit(1);
+    }
+    if (WIFEXITED(status)) {
+        int exit_status = WEXITSTATUS(status);
+        if (exit_status == 0) {
+            printf("Syntax OK\n");
+            
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
     static char line[4096];
@@ -10,14 +51,18 @@ int main(int argc, char *argv[]) {
         fflush(stdout);
         if (!fgets(line, sizeof(line), stdin))  break;
 
-        if (memcmp(type,line,strlen(type)) == 0){
-            printf("Define a new function.\n");
+        int res = write_function_to_file(line);
+        res == 0 ? printf("Syntax OK\n") : printf("Syntax Error\n");
 
-        }
-        else{
-            printf("Define a new variable.\n");
+        // if (memcmp(type,line,strlen(type)) == 0){
+        //     printf("Define a new function.\n");
+        //     // Define a new function.
             
-        }
+        // }
+        // else{
+        //     printf("Define a new variable.\n");
+            
+        // }
 
         // To be implemented.
         printf("Got %zu chars.\n", strlen(line));
