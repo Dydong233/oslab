@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
         else{
             FILE *fp = fopen(function_file,"a+");
             if(!fp) {perror("fopen");  return -1;}
-            fprintf(fp,"%s",line);
+            fprintf(fp,"%s\n",line);
             fclose(fp);
         }
 
