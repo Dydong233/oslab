@@ -97,10 +97,10 @@ int main(int argc, char *argv[]) {
         else{
             FILE *fp = fopen(function_file,"w+");
             if(!fp) {perror("fopen");  return -1;}
-            fprintf(fp,line);
+            fprintf(fp,"%s",line);
             fclose(fp);
         }
-        
+
         // register the function
         if(!input_class){
 
