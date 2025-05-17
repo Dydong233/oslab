@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
         printf("crepl> ");
         fflush(stdout);
         if (!fgets(line, sizeof(line), stdin))  break;
-        line[strlen(line)]='\x00';
+        line[strlen(line)-1]='\x00';
 
         if (memcmp(type,line,strlen(type)) == 0){
             // Define a new function.
