@@ -8,7 +8,7 @@
 int write_function_to_file(const char *function_body)
 {
     // check the line's syntax
-    char tmp_file[] = "/tmp/tmp_XXX.c";
+    char tmp_file[] = "/tmp/tmp_func_XXXXXX.c";
     int fd = mkstemps(tmp_file,2);
     if(fd == -1)    {perror("mkstemps");    return -1;}
     FILE *fp = fdopen(fd,"w");
