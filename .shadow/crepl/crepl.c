@@ -12,12 +12,28 @@ static char *function_file = "/tmp/function_file.c";
 
 int check_function_syntax(const char *function_body)
 {
+    // open the source file
+    FILE *src_fp = fopen(function_file,"r");
+    if(!src_fp) {perror("fopen");  return -1;}
+
     // check the line's syntax
     char tmp_file[] = "/tmp/tmp_func_XXXXXX.c";
     int fd = mkstemps(tmp_file,2);
     if(fd == -1)    {perror("mkstemps");    return -1;}
     FILE *fp = fdopen(fd,"w");
-    assert(fp>=0);
+    if(!fd) {perror("fdopen");  return -1;}
+    char buf[1024];
+    int n;
+    while ((n = fread(buf, 1, sizeof(buf), src_fp)) > 0) {
+        if (fwrite(buf, 1, n, fp) != n) {
+            perror("fwrite");
+            fclose(src_fp);
+            fclose(fp);
+            unlink(tmp_file);
+            return -1;
+        }
+    }
+
     fprintf(fp,"%s\n",function_body);
     fclose(fp);
     
@@ -72,7 +88,7 @@ int main(int argc, char *argv[]) {
             printf("Syntax Error\n");
             continue;
         }
-        
+        // register the function
         if(input_class){
 
         }
