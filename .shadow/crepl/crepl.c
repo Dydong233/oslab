@@ -4,6 +4,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <assert.h>
+#include <fcntl.h>
 
 int write_function_to_file(const char *function_body)
 {
@@ -22,7 +23,12 @@ int write_function_to_file(const char *function_body)
     if(pid == 0){
         const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
         execvp("gcc", (char *const *)args);
-        // perror("execvp");
+        int devnull = open("/dev/null", O_WRONLY);
+        if (devnull != -1) {
+            dup2(devnull, STDERR_FILENO);  // close the original stderr
+            close(devnull);
+        }
+        perror("execvp");
         exit(127);
     }
     // father pid
