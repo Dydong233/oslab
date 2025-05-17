@@ -6,7 +6,9 @@
 #include <assert.h>
 #include <fcntl.h>
 
-int write_function_to_file(const char *function_body)
+#define MAX_LINE 1<<12
+
+int check_function_syntax(const char *function_body)
 {
     // check the line's syntax
     char tmp_file[] = "/tmp/tmp_func_XXXXXX.c";
@@ -43,26 +45,42 @@ int write_function_to_file(const char *function_body)
 }
 
 int main(int argc, char *argv[]) {
-    static char line[4096];
+    static char line[MAX_LINE];
+    static char tmp_line[MAX_LINE];
     static char *type = "int";
+    static int idx = 0;
 
     while (1) {
         printf("crepl> ");
         fflush(stdout);
         if (!fgets(line, sizeof(line), stdin))  break;
 
-        int res = write_function_to_file(line);
-        res == 0 ? printf("Syntax OK\n") : printf("Syntax Error\n");
+        if (memcmp(type,line,strlen(type)) == 0){
+            // Define a new function.
+            printf("Define a new function.\n");
+            // check the syntax of the function
+            int res = check_function_syntax(line);
+            if(res == -1) {
+                printf("Syntax Error\n");
+                continue;
+            }
 
-        // if (memcmp(type,line,strlen(type)) == 0){
-        //     printf("Define a new function.\n");
-        //     // Define a new function.
-            
-        // }
-        // else{
-        //     printf("Define a new variable.\n");
-            
-        // }
+        }
+        else{
+            // Define a new variable.
+            printf("Define a new variable.\n");
+            // change the expression to a function
+            // use a wrapper function
+            sprintf(tmp_line,"__expr_wrapper_%d {return %s;}",idx++, line);
+            printf("%s\n",tmp_line);
+            // check the syntax of the function
+            int res = check_function_syntax(tmp_line);
+            if(res == -1) {
+                printf("Syntax Error\n");
+                continue;
+            }
+
+        }
 
         // To be implemented.
         printf("Got %zu chars.\n", strlen(line));
