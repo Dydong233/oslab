@@ -29,6 +29,7 @@ int check_function_syntax(const char *function_body)
             close(devnull);
         }
         const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
+        puts("????????????????/");
         execvp("gcc", (char *const *)args);
         perror("execvp");
         exit(127);
