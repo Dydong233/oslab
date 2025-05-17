@@ -56,6 +56,12 @@ int main(int argc, char *argv[]) {
         if (!fgets(line, sizeof(line), stdin))  break;
         line[strlen(line)-1]='\x00';
 
+        int res = check_function_syntax(line);
+            if(res == -1) {
+                printf("Syntax Error\n");
+                continue;
+            }
+
         if (memcmp(type,line,strlen(type)) == 0){
             // Define a new function.
             printf("Define a new function.\n");
