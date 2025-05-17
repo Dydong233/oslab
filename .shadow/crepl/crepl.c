@@ -51,18 +51,17 @@ int main(int argc, char *argv[]) {
     static char tmp_line[MAX_LINE];
     static char *type = "int";
     static int idx = 0;
-    static int input_class = 0;
 
     while (1) {
         printf("crepl> ");
         fflush(stdout);
         if (!fgets(line, sizeof(line), stdin))  break;
         line[strlen(line)-1] = '\x00';
+        int input_class = 0;
         if(memcmp(type,line,strlen(type))) input_class = 1;
         else   {
             // change the expression to a function
             // use a wrapper function
-            input_class = 0;
             sprintf(tmp_line,"int __expr_wrapper_%d() {return %s;}",idx++, line);
             memcpy(line,tmp_line,strlen(line));
         }
