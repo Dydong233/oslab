@@ -23,11 +23,11 @@ int check_function_syntax(const char *function_body)
     pid_t pid = fork();
     assert(pid>=0);
     if(pid == 0){
-        // int devnull = open("/dev/null", O_WRONLY);
-        // if (devnull != -1) {
-        //     dup2(devnull, STDERR_FILENO);  // close the original stderr
-        //     close(devnull);
-        // }
+        int devnull = open("/dev/null", O_WRONLY);
+        if (devnull != -1) {
+            dup2(devnull, STDERR_FILENO);  // close the original stderr
+            close(devnull);
+        }
         const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
         execvp("gcc", (char *const *)args);
         perror("execvp");
@@ -56,19 +56,12 @@ int main(int argc, char *argv[]) {
         if (!fgets(line, sizeof(line), stdin))  break;
         line[strlen(line)-1]='\x00';
 
-        int res = check_function_syntax(line);
-        printf("check_function_syntax: %d\n", res);
-            if(res == -1) {
-                printf("Syntax Error\n");
-                continue;
-            }
-
         if (memcmp(type,line,strlen(type)) == 0){
             // Define a new function.
             printf("Define a new function.\n");
             // check the syntax of the function
             int res = check_function_syntax(line);
-            if(res == -1) {
+            if(res != 0) {
                 printf("Syntax Error\n");
                 continue;
             }
@@ -83,7 +76,7 @@ int main(int argc, char *argv[]) {
             printf("%s\n",tmp_line);
             // check the syntax of the function
             int res = check_function_syntax(tmp_line);
-            if(res == -1) {
+            if(res != 0) {
                 printf("Syntax Error\n");
                 continue;
             }
