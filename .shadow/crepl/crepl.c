@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
         else{
-            FILE *fp = fopen(function_file,"w+");
+            FILE *fp = fopen(function_file,"a+");
             if(!fp) {perror("fopen");  return -1;}
             fprintf(fp,"%s",line);
             fclose(fp);
