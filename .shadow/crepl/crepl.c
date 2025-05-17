@@ -21,13 +21,13 @@ int write_function_to_file(const char *function_body)
     pid_t pid = fork();
     assert(pid>=0);
     if(pid == 0){
-        const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
-        execvp("gcc", (char *const *)args);
         int devnull = open("/dev/null", O_WRONLY);
         if (devnull != -1) {
             dup2(devnull, STDERR_FILENO);  // close the original stderr
             close(devnull);
         }
+        const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
+        execvp("gcc", (char *const *)args);
         perror("execvp");
         exit(127);
     }
