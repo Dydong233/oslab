@@ -87,7 +87,6 @@ int main(int argc, char *argv[]) {
             // use a wrapper function
             sprintf(tmp_line,"int __expr_wrapper_%d() {return %s;}",idx++, line);
             memcpy(line,tmp_line,MAX_LINE>>1);
-            printf("%s\n",line);
         }
         // check the syntax of the function
         int res = check_function_syntax(line);
@@ -104,11 +103,9 @@ int main(int argc, char *argv[]) {
         }
 
         // register the function
-        if(!input_class){
-
-        }
+        if(!input_class)    printf("[Added : ] %s\n",line);
         else{
-
+            
         }
 
 
