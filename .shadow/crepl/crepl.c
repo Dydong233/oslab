@@ -47,7 +47,7 @@ int check_function_syntax(const char *function_body)
             dup2(devnull, STDERR_FILENO);  // close the original stderr
             close(devnull);
         }
-        const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
+        const char *args[] = {"gcc", "-fsyntax-only", "-Werror=implicit-function-declaration", tmp_file, NULL};
         execvp("gcc", (char *const *)args);
         perror("execvp");
         exit(127);
