@@ -57,8 +57,8 @@ int main(int argc, char *argv[]) {
         fflush(stdout);
         if (!fgets(line, sizeof(line), stdin))  break;
         line[strlen(line)-1] = '\x00';
-        int input_class = 0;
-        if(memcmp(type,line,strlen(type))) input_class = 1;
+        int input_class = 1;
+        if(memcmp(type,line,strlen(type)) == 0) input_class = 0;
         else   {
             // change the expression to a function
             // use a wrapper function
