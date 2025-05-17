@@ -22,7 +22,7 @@ int write_function_to_file(const char *function_body)
     if(pid == 0){
         const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
         execvp("gcc", (char *const *)args);
-        perror("execvp");
+        // perror("execvp");
         exit(127);
     }
     // father pid
