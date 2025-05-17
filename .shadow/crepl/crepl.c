@@ -35,6 +35,7 @@ int check_function_syntax(const char *function_body)
     }
 
     fprintf(fp,"%s\n",function_body);
+    fflush(fp);
     fclose(fp);
     
     // compile the function and check for syntax errors
@@ -98,6 +99,7 @@ int main(int argc, char *argv[]) {
             FILE *fp = fopen(function_file,"a+");
             if(!fp) {perror("fopen");  return -1;}
             fprintf(fp,"%s\n",line);
+            fflush(fp);
             fclose(fp);
         }
 
