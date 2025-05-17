@@ -71,7 +71,11 @@ int main(int argc, char *argv[]) {
     while (1) {
         printf("crepl> ");
         fflush(stdout);
-        if (!fgets(line, sizeof(line), stdin))  break;
+        if (!fgets(line, sizeof(line), stdin))  
+        {
+            unlink(function_file);
+            break;
+        }
         line[strlen(line)-1] = '\x00';
         int input_class = 1;
         if(memcmp(type,line,strlen(type)) == 0) input_class = 0;
