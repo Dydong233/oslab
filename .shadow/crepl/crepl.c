@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
             FILE *fp = fopen(function_file,"a+");
             if(!fp) {perror("fopen");  return -1;}
             fprintf(fp,"%s\n",line);
-            fflush(fp);
+            // fflush(fp);
             fclose(fp);
         }
 
