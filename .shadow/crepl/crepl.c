@@ -35,7 +35,7 @@ int check_function_syntax(const char *function_body)
     }
 
     fprintf(fp,"%s\n",function_body);
-    fflush(fp);
+    // fflush(fp);
     fclose(fp);
     
     // compile the function and check for syntax errors
