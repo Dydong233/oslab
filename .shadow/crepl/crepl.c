@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
             // change the expression to a function
             // use a wrapper function
             sprintf(tmp_line,"int __expr_wrapper_%d() {return %s;}",idx++, line);
-            memcpy(line,tmp_line,MAX_LINE);
+            memcpy(line,tmp_line,MAX_LINE>>1);
             printf("%s\n",line);
         }
         // check the syntax of the function
