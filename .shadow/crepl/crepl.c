@@ -31,6 +31,7 @@ int write_function_to_file(const char *function_body)
         perror("waitpid");
         exit(1);
     }
+    unlink(tmp_file);
     if (WIFEXITED(status))   return WEXITSTATUS(status);
     return -1;
 }
