@@ -71,6 +71,13 @@ int main(int argc, char *argv[]) {
             printf("Syntax Error\n");
             continue;
         }
+        
+        if(input_class){
+
+        }
+        else{
+            
+        }
 
 
         // To be implemented.
