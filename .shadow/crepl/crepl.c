@@ -45,7 +45,7 @@ int check_function_syntax(const char *function_body)
 }
 
 int main(int argc, char *argv[]) {
-    static char line[MAX_LINE];
+    static char line[MAX_LINE>>1];
     static char tmp_line[MAX_LINE];
     static char *type = "int";
     static int idx = 0;
