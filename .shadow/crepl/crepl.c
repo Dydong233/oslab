@@ -8,6 +8,8 @@
 
 #define MAX_LINE 1<<12
 
+static char *function_file = "/tmp/function_file.c";
+
 int check_function_syntax(const char *function_body)
 {
     // check the line's syntax
@@ -23,11 +25,11 @@ int check_function_syntax(const char *function_body)
     pid_t pid = fork();
     assert(pid>=0);
     if(pid == 0){
-        // int devnull = open("/dev/null", O_WRONLY);
-        // if (devnull != -1) {
-        //     dup2(devnull, STDERR_FILENO);  // close the original stderr
-        //     close(devnull);
-        // }
+        int devnull = open("/dev/null", O_WRONLY);
+        if (devnull != -1) {
+            dup2(devnull, STDERR_FILENO);  // close the original stderr
+            close(devnull);
+        }
         const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
         execvp("gcc", (char *const *)args);
         perror("execvp");
@@ -49,39 +51,29 @@ int main(int argc, char *argv[]) {
     static char tmp_line[MAX_LINE];
     static char *type = "int";
     static int idx = 0;
+    static int input_class = 0;
 
     while (1) {
         printf("crepl> ");
         fflush(stdout);
         if (!fgets(line, sizeof(line), stdin))  break;
-        line[strlen(line)-1]='\x00';
-
-        if (memcmp(type,line,strlen(type)) == 0){
-            // Define a new function.
-            printf("Define a new function.\n");
-            // check the syntax of the function
-            int res = check_function_syntax(line);
-            if(res != 0) {
-                printf("Syntax Error\n");
-                continue;
-            }
-
-        }
-        else{
-            // Define a new variable.
-            printf("Define a new variable.\n");
+        line[strlen(line)-1] = '\x00';
+        int res;
+        if(memcmp(type,line,strlen(type))) input_class = 1;
+        else   {
             // change the expression to a function
             // use a wrapper function
+            input_class = 0;
             sprintf(tmp_line,"int __expr_wrapper_%d() {return %s;}",idx++, line);
-            printf("%s\n",tmp_line);
-            // check the syntax of the function
-            int res = check_function_syntax(tmp_line);
-            if(res != 0) {
-                printf("Syntax Error\n");
-                continue;
-            }
-
+            memcpy(line,tmp_line,strlen(line));
         }
+        // check the syntax of the function
+        int res = check_function_syntax(line);
+        if(res != 0) {
+            printf("Syntax Error\n");
+            continue;
+        }
+
 
         // To be implemented.
         printf("Got %zu chars.\n", strlen(line));
