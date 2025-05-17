@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
             printf("Define a new variable.\n");
             // change the expression to a function
             // use a wrapper function
-            sprintf(tmp_line,"__expr_wrapper_%d {return %s;}",idx++, line);
+            sprintf(tmp_line,"int __expr_wrapper_%d {return %s;}",idx++, line);
             printf("%s\n",tmp_line);
             // check the syntax of the function
             int res = check_function_syntax(tmp_line);
