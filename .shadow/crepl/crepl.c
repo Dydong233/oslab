@@ -77,6 +77,8 @@ int main(int argc, char *argv[]) {
             break;
         }
         line[strlen(line)-1] = '\x00';
+
+        // clarify the input_class
         int input_class = 1;
         if(memcmp(type,line,strlen(type)) == 0) input_class = 0;
         else   {
@@ -92,8 +94,15 @@ int main(int argc, char *argv[]) {
             printf("Syntax Error\n");
             continue;
         }
+        else{
+            FILE *fp = fopen(function_file,"w+");
+            if(!fp) {perror("fopen");  return -1;}
+            fprintf(fp,line);
+            fclose(fp);
+        }
+        
         // register the function
-        if(input_class){
+        if(!input_class){
 
         }
         else{
