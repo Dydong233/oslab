@@ -29,7 +29,6 @@ int check_function_syntax(const char *function_body)
             close(devnull);
         }
         const char *args[] = {"gcc", "-fsyntax-only", tmp_file, NULL};
-        puts("????????????????");
         execvp("gcc", (char *const *)args);
         perror("execvp");
         exit(127);
@@ -58,6 +57,7 @@ int main(int argc, char *argv[]) {
         line[strlen(line)-1]='\x00';
 
         int res = check_function_syntax(line);
+        printf("check_function_syntax: %d\n", res);
             if(res == -1) {
                 printf("Syntax Error\n");
                 continue;
