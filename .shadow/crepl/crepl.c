@@ -13,7 +13,7 @@ static char *function_file = "/tmp/function_file.c";
 int check_function_syntax(const char *function_body)
 {
     // open the source file
-    FILE *src_fp = fopen(function_file,"w+");
+    FILE *src_fp = fopen(function_file,"a+");
     if(!src_fp) {perror("fopen");  return -1;}
 
     // check the line's syntax
