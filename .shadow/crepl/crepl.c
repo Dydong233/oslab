@@ -62,7 +62,7 @@ int check_function_syntax(const char *function_body)
     if (WIFEXITED(status))   return WEXITSTATUS(status);
     return -1;
 }
-void call_the_function(const char *function_body)
+int call_the_function(const char *function_body)
 {
     pid_t pid = fork();
     // child pid
@@ -85,13 +85,14 @@ void call_the_function(const char *function_body)
     if ((error = dlerror()) != NULL)  {
         fprintf(stderr, "%s\n", error);
         dlclose(handle);
-        return 1;
+        return -1;
     }
     int res = func();
     printf("Result: %d\n", res);
     dlclose(handle);
-    
+
     unlink("/tmp/function_file.so");
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
