@@ -62,6 +62,15 @@ int check_function_syntax(const char *function_body)
     if (WIFEXITED(status))   return WEXITSTATUS(status);
     return -1;
 }
+
+void get_function_name(char *new_line,const char *function)
+{
+    int idx=0;
+    for(int i=4;function[i]!=' ';i++)   new_line[idx++] = function[i];
+    new_line[idx] = '\0';
+    printf("Function name: %s\n", new_line);
+    return;
+}
 int call_the_function(const char *function_body)
 {
     pid_t pid = fork();
@@ -81,7 +90,9 @@ int call_the_function(const char *function_body)
     void *handle = dlopen("/tmp/function_file.so", RTLD_LAZY);
     if (!handle) {fprintf(stderr, "%s\n", dlerror()); exit(1);}
     dlerror();
-    int (*func)() = dlsym(handle, function_body);
+    char new_line[MAX_LINE];
+    get_function_name(function_body, new_line);
+    int (*func)() = dlsym(handle, new_line);
     if ((error = dlerror()) != NULL)  {
         fprintf(stderr, "%s\n", error);
         dlclose(handle);
@@ -90,7 +101,6 @@ int call_the_function(const char *function_body)
     int res = func();
     printf("Result: %d\n", res);
     dlclose(handle);
-
     unlink("/tmp/function_file.so");
     return 0;
 }
