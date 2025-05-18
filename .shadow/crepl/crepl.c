@@ -66,7 +66,7 @@ int check_function_syntax(const char *function_body)
 void get_function_name(char *new_line,const char *function)
 {
     int idx=0;
-    for(int i=4;function[i]!=' ';i++)   new_line[idx++] = function[i];
+    for(int i=4;function[i]!='(';i++)   new_line[idx++] = function[i];
     new_line[idx] = '\0';
     printf("Function name: %s\n", new_line);
     return;
