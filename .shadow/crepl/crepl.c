@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include <fcntl.h>
+#include <dlfcn.h>
 
 #define MAX_LINE 1<<12
 
@@ -40,7 +41,6 @@ int check_function_syntax(const char *function_body)
     
     // compile the function and check for syntax errors
     pid_t pid = fork();
-    assert(pid>=0);
     if(pid == 0){
         int devnull = open("/dev/null", O_WRONLY);
         if (devnull != -1) {
@@ -61,6 +61,37 @@ int check_function_syntax(const char *function_body)
     unlink(tmp_file);
     if (WIFEXITED(status))   return WEXITSTATUS(status);
     return -1;
+}
+void call_the_function(const char *function_body)
+{
+    pid_t pid = fork();
+    // child pid
+    if(pid == 0){
+        const char *argv[] = {"gcc", "-fPIC", "-shared", "-o", "/tmp/function_file.so", "/tmp/function_file.c", NULL};
+        execvp("gcc", (char *const *)argv);
+        perror("execvp failed");
+        exit(127);
+    }
+
+    // father pid
+    int status;
+    waitpid(pid, &status, 0);
+    // call the functions
+    char *error;
+    void *handle = dlopen("/tmp/function_file.so", RTLD_LAZY);
+    if (!handle) {fprintf(stderr, "%s\n", dlerror()); exit(1);}
+    dlerror();
+    int (*func)() = dlsym(handle, function_body);
+    if ((error = dlerror()) != NULL)  {
+        fprintf(stderr, "%s\n", error);
+        dlclose(handle);
+        return 1;
+    }
+    int res = func();
+    printf("Result: %d\n", res);
+    dlclose(handle);
+    
+    unlink("/tmp/function_file.so");
 }
 
 int main(int argc, char *argv[]) {
@@ -98,16 +129,13 @@ int main(int argc, char *argv[]) {
             FILE *fp = fopen(function_file,"a+");
             if(!fp) {perror("fopen");  return -1;}
             fprintf(fp,"%s\n",line);
-            // fflush(fp);
+            fflush(fp);
             fclose(fp);
         }
 
         // register the function
-        if(!input_class)    printf("[Added : ] %s\n",line);
-        else{
-            
-        }
-
+        if(!input_class)    printf("[Added: ] %s\n",line);
+        else    call_the_function(line);
 
         // To be implemented.
         printf("Got %zu chars.\n", strlen(line));
