@@ -91,7 +91,7 @@ int call_the_function(const char *function_body)
     if (!handle) {fprintf(stderr, "%s\n", dlerror()); exit(1);}
     dlerror();
     char new_line[MAX_LINE];
-    get_function_name(function_body, new_line);
+    get_function_name(new_line ,function_body);
     int (*func)() = dlsym(handle, new_line);
     if ((error = dlerror()) != NULL)  {
         fprintf(stderr, "%s\n", error);
