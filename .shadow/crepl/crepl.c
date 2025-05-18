@@ -68,7 +68,6 @@ void get_function_name(char *new_line,const char *function)
     int idx=0;
     for(int i=4;function[i]!='(';i++)   new_line[idx++] = function[i];
     new_line[idx] = '\0';
-    printf("Function name: %s\n", new_line);
     return;
 }
 int call_the_function(const char *function_body)
@@ -98,8 +97,7 @@ int call_the_function(const char *function_body)
         dlclose(handle);
         return -1;
     }
-    int res = func();
-    printf("(%s) == %d\n",new_line,res);
+    printf("%d\n",func());
     dlclose(handle);
     unlink("/tmp/function_file.so");
     return 0;
@@ -107,6 +105,7 @@ int call_the_function(const char *function_body)
 
 int main(int argc, char *argv[]) {
     static char line[MAX_LINE>>1];
+    static char src_line[MAX_LINE];
     static char tmp_line[MAX_LINE];
     static char *type = "int";
     static int idx = 0;
@@ -125,6 +124,8 @@ int main(int argc, char *argv[]) {
         int input_class = 1;
         if(memcmp(type,line,strlen(type)) == 0) input_class = 0;
         else   {
+            memset(src_line,0,MAX_LINE);
+            memcpy(src_line,line,strlen(line));
             // change the expression to a function
             // use a wrapper function
             sprintf(tmp_line,"int __expr_wrapper_%d() {return %s;}",idx++, line);
@@ -146,9 +147,10 @@ int main(int argc, char *argv[]) {
 
         // register the function
         if(!input_class)    printf("[Added: ] %s\n",line);
-        else    call_the_function(line);
-
-        // To be implemented.
-        printf("Got %zu chars.\n", strlen(line));
+        else   {
+            printf("(%s) == ",src_line);
+            call_the_function(line);
+        }
     }
+    return 0;
 }
