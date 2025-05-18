@@ -99,7 +99,7 @@ int call_the_function(const char *function_body)
         return -1;
     }
     int res = func();
-    printf("Result: %d\n", res);
+    printf("(%s) == %d\n",new_line,res);
     dlclose(handle);
     unlink("/tmp/function_file.so");
     return 0;
